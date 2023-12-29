@@ -100,7 +100,7 @@ public class Plugin : BaseUnityPlugin
 
         if (Directory.Exists(oldDirectoryPath)) Directory.Delete(oldDirectoryPath, true);
 
-        PluginDataPath = Path.Combine(Paths.PluginPath, "Lordfirespeed-Configured_Youtube_Boombox", "data");
+        PluginDataPath = Path.Combine(Path.GetDirectoryName(Info.Location)!, "configured-youtube-boombox-data");
         DownloadsPath = Path.Combine(Paths.BepInExRootPath, "Custom Songs", "Boombox Music");
 
         if (!Directory.Exists(PluginDataPath)) Directory.CreateDirectory(PluginDataPath);
