@@ -3,7 +3,7 @@
   
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>com.github.lordfirespeed.configured_youtube_boombox</AssemblyName>
     <Product>Configured Youtube Boombox</Product>
     <LangVersion>12</LangVersion>
