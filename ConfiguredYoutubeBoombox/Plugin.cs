@@ -77,19 +77,6 @@ public class Plugin : BaseUnityPlugin
 
     private async void Awake()
     {
-        MaxCachedDownloads = Config.Bind(
-            new ConfigDefinition("General", "Max Cached Downloads"),
-            10,
-            new ConfigDescription(
-                "The maximum number of downloaded songs that can be saved before deleting.",
-                new ConfigNumberClamper(1, 100)
-            )
-        );
-        DeleteDownloadsOnRestart = Config.Bind(
-            new ConfigDefinition("General", "Re-download on restart"),
-            false,
-            new ConfigDescription("Whether or not to delete downloads when your game starts again.")
-        );
         MaxSongDuration = Config.Bind(
             new ConfigDefinition("General", "Max Song Duration"),
             600f,
@@ -105,10 +92,6 @@ public class Plugin : BaseUnityPlugin
 
         if (!Directory.Exists(PluginDataPath)) Directory.CreateDirectory(PluginDataPath);
         if (!Directory.Exists(DownloadsPath)) Directory.CreateDirectory(DownloadsPath);
-
-        if (DeleteDownloadsOnRestart.Value)
-            foreach (var file in Directory.GetFiles(DownloadsPath))
-                File.Delete(file);
 
         if (!Directory.GetFiles(PluginDataPath).Any(file => file.Contains("yt-dl")))
             await Utils.DownloadYtDlp(PluginDataPath);
