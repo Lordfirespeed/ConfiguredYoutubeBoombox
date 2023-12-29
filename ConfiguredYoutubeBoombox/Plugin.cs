@@ -25,10 +25,10 @@ using System.Security.Policy;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Collections.Specialized;
-using YoutubeBoombox.Providers;
 using System.Diagnostics;
+using ConfiguredYoutubeBoombox.Providers;
 
-namespace YoutubeBoombox
+namespace ConfiguredYoutubeBoombox
 {
     public class InfoCache : IProgress<string>
     {
@@ -69,7 +69,7 @@ namespace YoutubeBoombox
 
     [BepInPlugin("steven4547466.YoutubeBoombox", "Youtube Boombox", "1.5.0")]
     [BepInDependency("LC_API")]
-    public class YoutubeBoombox : BaseUnityPlugin
+    public class Plugin : BaseUnityPlugin
     {
         private static Harmony Harmony { get; set; }
 
@@ -77,7 +77,7 @@ namespace YoutubeBoombox
 
         internal static string DownloadsPath { get; private set; }
 
-        internal static YoutubeBoombox Singleton { get; private set; }
+        internal static Plugin Singleton { get; private set; }
 
         public static YoutubeDL YoutubeDL { get; private set; } = new YoutubeDL();
 

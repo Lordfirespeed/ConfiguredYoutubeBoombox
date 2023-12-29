@@ -10,14 +10,14 @@ using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using ConfiguredYoutubeBoombox.Providers;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using YoutubeBoombox.Providers;
 using YoutubeDLSharp;
-using static YoutubeBoombox.YoutubeBoombox;
+using static ConfiguredYoutubeBoombox.Plugin;
 
-namespace YoutubeBoombox
+namespace ConfiguredYoutubeBoombox
 {
     public class BoomboxController : NetworkBehaviour
     {
@@ -220,7 +220,7 @@ namespace YoutubeBoombox
 
             Uri uri = new Uri(url);
 
-            ParsedUri parsedUri = YoutubeBoombox.Providers.First(p => p.Hosts.Contains(uri.Host)).ParseUri(uri);
+            ParsedUri parsedUri = Plugin.Providers.First(p => p.Hosts.Contains(uri.Host)).ParseUri(uri);
 
             Download(parsedUri);
         }
@@ -350,7 +350,7 @@ namespace YoutubeBoombox
                 try
                 {
                     DebugLog($"Downloading song duration data.", EnableDebugLogs.Value);
-                    var videoDataResult = await YoutubeBoombox.YoutubeDL.RunVideoDataFetch(url);
+                    var videoDataResult = await Plugin.YoutubeDL.RunVideoDataFetch(url);
                     DebugLog($"Downloaded song duration data.", EnableDebugLogs.Value);
 
                     if (videoDataResult.Success && videoDataResult.Data.Duration != null)
@@ -385,7 +385,7 @@ namespace YoutubeBoombox
 
             DebugLog($"Trying to download {url}.", EnableDebugLogs.Value);
 
-            var res = await YoutubeBoombox.YoutubeDL.RunAudioDownload(url, YoutubeDLSharp.Options.AudioConversionFormat.Mp3);
+            var res = await Plugin.YoutubeDL.RunAudioDownload(url, YoutubeDLSharp.Options.AudioConversionFormat.Mp3);
 
             DebugLog($"Downloaded.", EnableDebugLogs.Value);
 
@@ -450,7 +450,7 @@ namespace YoutubeBoombox
             }
             else
             {
-                var videoDataResult = await YoutubeBoombox.YoutubeDL.RunVideoDataFetch(url);
+                var videoDataResult = await Plugin.YoutubeDL.RunVideoDataFetch(url);
 
                 if (videoDataResult.Success && videoDataResult.Data.Duration != null)
                 {
@@ -469,7 +469,7 @@ namespace YoutubeBoombox
                 }
             }
 
-            var res = await YoutubeBoombox.YoutubeDL.RunAudioDownload(url, YoutubeDLSharp.Options.AudioConversionFormat.Mp3);
+            var res = await Plugin.YoutubeDL.RunAudioDownload(url, YoutubeDLSharp.Options.AudioConversionFormat.Mp3);
 
             if (res.Success)
             {
@@ -492,7 +492,7 @@ namespace YoutubeBoombox
             {
                 DebugLog($"Playlist not found in cache, downloading all ids.", EnableDebugLogs.Value);
 
-                var playlistResult = await YoutubeBoombox.YoutubeDL.RunVideoPlaylistDownload(CurrentUrl, 1, null, null, "bestvideo+bestaudio/best",
+                var playlistResult = await Plugin.YoutubeDL.RunVideoPlaylistDownload(CurrentUrl, 1, null, null, "bestvideo+bestaudio/best",
                     YoutubeDLSharp.Options.VideoRecodeFormat.None, default, null, new InfoCache(CurrentId),
                     new YoutubeDLSharp.Options.OptionSet()
                     {

@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.UIElements;
 
-namespace YoutubeBoombox
+namespace ConfiguredYoutubeBoombox
 {
     internal class YoutubeBoomboxGUI : MonoBehaviour
     {

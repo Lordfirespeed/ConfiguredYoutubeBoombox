@@ -1,7 +1,7 @@
 ﻿using BepInEx.Configuration;
 using UnityEngine;
 
-namespace YoutubeBoombox
+namespace ConfiguredYoutubeBoombox
 {
     public class ConfigNumberClamper : AcceptableValueBase
     {

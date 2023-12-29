@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoutubeBoombox.Providers
+namespace ConfiguredYoutubeBoombox.Providers
 {
     public class YouTubeProvider : Provider
     {
