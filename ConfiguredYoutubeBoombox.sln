@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfiguredYoutubeBoombox", "ConfiguredYoutubeBoombox/ConfiguredYoutubeBoombox.csproj", "{50A0E49B-1441-46DA-9FBF-11BD9A8DF0FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeDLSharp", "YoutubeDLSharp\YoutubeDLSharp.csproj", "{83B1FC29-C6FD-4F14-800D-5FD139D94D5C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{50A0E49B-1441-46DA-9FBF-11BD9A8DF0FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50A0E49B-1441-46DA-9FBF-11BD9A8DF0FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50A0E49B-1441-46DA-9FBF-11BD9A8DF0FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83B1FC29-C6FD-4F14-800D-5FD139D94D5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83B1FC29-C6FD-4F14-800D-5FD139D94D5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83B1FC29-C6FD-4F14-800D-5FD139D94D5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83B1FC29-C6FD-4F14-800D-5FD139D94D5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
