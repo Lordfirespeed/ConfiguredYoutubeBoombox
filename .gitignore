@@ -3,6 +3,9 @@
 
 # Specific includes
 
+## submodules
+!submodules/
+
 ## Build System/Scripts
 !NuGet.Config
 !Directory.Build.props
@@ -34,6 +37,11 @@
 !ConfiguredYoutubeBoombox/
 ConfiguredYoutubeBoombox/[Bb]in/
 ConfiguredYoutubeBoombox/[Oo]bj/
+
+### YoutubeDLSharp Project
+!YoutubeDLSharp/
+YoutubeDLSharp/[Bb]in/
+YoutubeDLSharp/[Oo]bj/
 
 # Explicit exceptions/ignores
 **.user
