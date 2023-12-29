@@ -3,24 +3,18 @@
   
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <AssemblyName>YoutubeBoombox</AssemblyName>
-    <Product></Product>
-    <TargetFrameworkVersion>netstandard2.0</TargetFrameworkVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>com.github.lordfirespeed.configured_youtube_boombox</AssemblyName>
+    <Product>Configured Youtube Boombox</Product>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MinVer" Version="4.3.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild">
-      <Version>0.4.1</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="BepInEx.Core">
-      <Version>5.4.21</Version>
-    </PackageReference>
+    <PackageReference Include="MinVer" Version="4.3.0" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+    <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" />
   </ItemGroup>
   
   <ItemGroup>
