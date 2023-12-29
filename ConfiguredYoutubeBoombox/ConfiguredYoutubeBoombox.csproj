@@ -52,7 +52,7 @@
 
   <ItemGroup Condition="$(CI) == 'true'">
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="45.0.2-alpha.1" />
-    <PackageReference Include="u_2018.LethalCompany.LC-AP" Version="0.0.0" />
+    <PackageReference Include="u_2018.LethalCompany.LC-API" Version="0.0.0" />
   </ItemGroup>
   
   <ItemGroup>
