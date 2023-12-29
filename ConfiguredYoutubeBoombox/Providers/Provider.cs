@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConfiguredYoutubeBoombox.Providers
 {
@@ -14,14 +10,6 @@ namespace ConfiguredYoutubeBoombox.Providers
 
     public class ParsedUri
     {
-        public Uri Uri { get; }
-
-        public string Id { get; }
-
-        public string DownloadUrl { get; }
-
-        public UriType UriType { get; }
-
         public ParsedUri(Uri uri, string id, string downloadUrl, UriType uriType)
         {
             Uri = uri;
@@ -29,6 +17,14 @@ namespace ConfiguredYoutubeBoombox.Providers
             DownloadUrl = downloadUrl;
             UriType = uriType;
         }
+
+        public Uri Uri { get; }
+
+        public string Id { get; }
+
+        public string DownloadUrl { get; }
+
+        public UriType UriType { get; }
     }
 
     public abstract class Provider

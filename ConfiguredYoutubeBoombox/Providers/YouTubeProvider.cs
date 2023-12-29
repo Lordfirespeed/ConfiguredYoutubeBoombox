@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConfiguredYoutubeBoombox.Providers
 {
     public class YouTubeProvider : Provider
     {
-        public override string[] Hosts => new string[] { "youtube.com", "www.youtube.com" };
+        public override string[] Hosts => new[] { "youtube.com", "www.youtube.com" };
 
         public override ParsedUri ParseUri(Uri uri)
         {
-            string id = string.Empty;
-            UriType uriType = UriType.Video;
+            var id = string.Empty;
+            var uriType = UriType.Video;
 
-            NameValueCollection collection = HttpUtility.ParseQueryString(uri.Query);
+            var collection = HttpUtility.ParseQueryString(uri.Query);
             id = collection.Get("v");
 
             if (id == null)
@@ -33,7 +28,7 @@ namespace ConfiguredYoutubeBoombox.Providers
 
     public class YouTuBeProvider : Provider
     {
-        public override string[] Hosts => new string[] { "youtu.be", "www.youtu.be" };
+        public override string[] Hosts => new[] { "youtu.be", "www.youtu.be" };
 
         public override ParsedUri ParseUri(Uri uri)
         {

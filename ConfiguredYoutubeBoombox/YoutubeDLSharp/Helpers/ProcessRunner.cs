@@ -7,14 +7,12 @@ using YoutubeDLSharp.Options;
 namespace YoutubeDLSharp.Helpers
 {
     /// <summary>
-    /// Provides methods for throttled execution of processes.
+    ///     Provides methods for throttled execution of processes.
     /// </summary>
     public class ProcessRunner
     {
         private const int MAX_COUNT = 100;
-        private SemaphoreSlim semaphore;
-
-        public byte TotalCount { get; private set; }
+        private readonly SemaphoreSlim semaphore;
 
         public ProcessRunner(byte initialCount)
         {
@@ -22,8 +20,10 @@ namespace YoutubeDLSharp.Helpers
             TotalCount = initialCount;
         }
 
+        public byte TotalCount { get; private set; }
+
         public async Task<(int, string[])> RunThrottled(YoutubeDLProcess process, string[] urls, OptionSet options,
-                                       CancellationToken ct, IProgress<DownloadProgress> progress = null)
+            CancellationToken ct, IProgress<DownloadProgress> progress = null)
         {
             var errors = new List<string>();
             process.ErrorReceived += (o, e) => errors.Add(e.Data);
@@ -47,8 +47,8 @@ namespace YoutubeDLSharp.Helpers
 
         private async Task decrementCount(byte decr)
         {
-            Task[] decrs = new Task[decr];
-            for (int i = 0; i < decr; i++)
+            var decrs = new Task[decr];
+            for (var i = 0; i < decr; i++)
                 decrs[i] = semaphore.WaitAsync();
             TotalCount -= decr;
             await Task.WhenAll(decrs);

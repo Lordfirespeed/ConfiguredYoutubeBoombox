@@ -5,14 +5,14 @@ namespace ConfiguredYoutubeBoombox
 {
     public class ConfigNumberClamper : AcceptableValueBase
     {
-        internal int Minimum { get; private set; } = int.MinValue;
-        internal int Maximum { get; private set; } = int.MaxValue;
-
-        public ConfigNumberClamper(int min, int max) : base(typeof(int)) 
+        public ConfigNumberClamper(int min, int max) : base(typeof(int))
         {
             Minimum = min;
             Maximum = max;
         }
+
+        internal int Minimum { get; } = int.MinValue;
+        internal int Maximum { get; } = int.MaxValue;
 
         public override object Clamp(object value)
         {
@@ -21,7 +21,7 @@ namespace ConfiguredYoutubeBoombox
 
         public override bool IsValid(object value)
         {
-            int val = (int)value;
+            var val = (int)value;
 
             return val >= Minimum && val <= Maximum;
         }

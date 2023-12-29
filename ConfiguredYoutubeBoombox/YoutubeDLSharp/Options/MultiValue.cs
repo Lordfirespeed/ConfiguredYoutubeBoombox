@@ -6,14 +6,12 @@ namespace YoutubeDLSharp.Options
 {
     public class MultiValue<T>
     {
-        private readonly List<T> values;
-
-        public List<T> Values => values;
-        
         public MultiValue(params T[] values)
         {
-            this.values = values.ToList();
+            this.Values = values.ToList();
         }
+
+        public List<T> Values { get; }
 
         public static implicit operator MultiValue<T>(T value)
         {
@@ -29,8 +27,7 @@ namespace YoutubeDLSharp.Options
         {
             if (value.Values.Count == 1)
                 return value.Values[0];
-            else
-                throw new InvalidCastException($"Cannot cast sequence of values to {typeof(T)}.");
+            throw new InvalidCastException($"Cannot cast sequence of values to {typeof(T)}.");
         }
 
         public static explicit operator T[](MultiValue<T> value)

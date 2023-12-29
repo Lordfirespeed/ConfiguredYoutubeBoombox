@@ -4,20 +4,14 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 // Provided by https://gist.github.com/bjorn-ali-goransson/b04a7c44808bb2de8cca3fc9a3762f9c
 public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/class/System.Web
 {
-
     public static void HtmlAttributeEncode(string s, TextWriter output)
     {
-        if (output == null)
-        {
-            throw new ArgumentNullException("output");
-        }
+        if (output == null) throw new ArgumentNullException("output");
         HttpEncoder.Current.HtmlAttributeEncode(s, output);
     }
 
@@ -38,18 +32,16 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         return UrlDecode(str, Encoding.UTF8);
     }
 
-    static char[] GetChars(MemoryStream b, Encoding e)
+    private static char[] GetChars(MemoryStream b, Encoding e)
     {
         return e.GetChars(b.GetBuffer(), 0, (int)b.Length);
     }
 
-    static void WriteCharBytes(IList buf, char ch, Encoding e)
+    private static void WriteCharBytes(IList buf, char ch, Encoding e)
     {
         if (ch > 255)
-        {
-            foreach (byte b in e.GetBytes(new char[] { ch }))
+            foreach (var b in e.GetBytes(new[] { ch }))
                 buf.Add(b);
-        }
         else
             buf.Add((byte)ch);
     }
@@ -70,7 +62,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         int xchar;
         char ch;
 
-        for (int i = 0; i < len; i++)
+        for (var i = 0; i < len; i++)
         {
             ch = s[i];
             if (ch == '%' && i + 2 < len && s[i + 1] != '%')
@@ -85,7 +77,9 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
                         i += 5;
                     }
                     else
+                    {
                         WriteCharBytes(bytes, '%', e);
+                    }
                 }
                 else if ((xchar = GetChar(s, i + 1, 2)) != -1)
                 {
@@ -96,6 +90,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
                 {
                     WriteCharBytes(bytes, '%', e);
                 }
+
                 continue;
             }
 
@@ -105,10 +100,9 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
                 WriteCharBytes(bytes, ch, e);
         }
 
-        byte[] buf = bytes.ToArray();
+        var buf = bytes.ToArray();
         bytes = null;
         return e.GetString(buf);
-
     }
 
     public static string UrlDecode(byte[] bytes, Encoding e)
@@ -119,9 +113,9 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         return UrlDecode(bytes, 0, bytes.Length, e);
     }
 
-    static int GetInt(byte b)
+    private static int GetInt(byte b)
     {
-        char c = (char)b;
+        var c = (char)b;
         if (c >= '0' && c <= '9')
             return c - '0';
 
@@ -134,13 +128,13 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         return -1;
     }
 
-    static int GetChar(byte[] bytes, int offset, int length)
+    private static int GetChar(byte[] bytes, int offset, int length)
     {
-        int value = 0;
-        int end = length + offset;
-        for (int i = offset; i < end; i++)
+        var value = 0;
+        var end = length + offset;
+        for (var i = offset; i < end; i++)
         {
-            int current = GetInt(bytes[i]);
+            var current = GetInt(bytes[i]);
             if (current == -1)
                 return -1;
             value = (value << 4) + current;
@@ -149,17 +143,17 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         return value;
     }
 
-    static int GetChar(string str, int offset, int length)
+    private static int GetChar(string str, int offset, int length)
     {
-        int val = 0;
-        int end = length + offset;
-        for (int i = offset; i < end; i++)
+        var val = 0;
+        var end = length + offset;
+        for (var i = offset; i < end; i++)
         {
-            char c = str[i];
+            var c = str[i];
             if (c > 127)
                 return -1;
 
-            int current = GetInt((byte)c);
+            var current = GetInt((byte)c);
             if (current == -1)
                 return -1;
             val = (val << 4) + current;
@@ -173,7 +167,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (bytes == null)
             return null;
         if (count == 0)
-            return String.Empty;
+            return string.Empty;
 
         if (bytes == null)
             throw new ArgumentNullException("bytes");
@@ -184,12 +178,12 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (count < 0 || offset + count > bytes.Length)
             throw new ArgumentOutOfRangeException("count");
 
-        StringBuilder output = new StringBuilder();
-        MemoryStream acc = new MemoryStream();
+        var output = new StringBuilder();
+        var acc = new MemoryStream();
 
-        int end = count + offset;
+        var end = count + offset;
         int xchar;
-        for (int i = offset; i < end; i++)
+        for (var i = offset; i < end; i++)
         {
             if (bytes[i] == '%' && i + 2 < count && bytes[i + 1] != '%')
             {
@@ -200,6 +194,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
                         output.Append(GetChars(acc, e));
                         acc.SetLength(0);
                     }
+
                     xchar = GetChar(bytes, i + 2, 4);
                     if (xchar != -1)
                     {
@@ -223,19 +218,12 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             }
 
             if (bytes[i] == '+')
-            {
                 output.Append(' ');
-            }
             else
-            {
                 output.Append((char)bytes[i]);
-            }
         }
 
-        if (acc.Length > 0)
-        {
-            output.Append(GetChars(acc, e));
-        }
+        if (acc.Length > 0) output.Append(GetChars(acc, e));
 
         acc = null;
         return output.ToString();
@@ -272,31 +260,32 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (count == 0)
             return new byte[0];
 
-        int len = bytes.Length;
+        var len = bytes.Length;
         if (offset < 0 || offset >= len)
             throw new ArgumentOutOfRangeException("offset");
 
         if (count < 0 || offset > len - count)
             throw new ArgumentOutOfRangeException("count");
 
-        MemoryStream result = new MemoryStream();
-        int end = offset + count;
-        for (int i = offset; i < end; i++)
+        var result = new MemoryStream();
+        var end = offset + count;
+        for (var i = offset; i < end; i++)
         {
-            char c = (char)bytes[i];
+            var c = (char)bytes[i];
             if (c == '+')
             {
                 c = ' ';
             }
             else if (c == '%' && i < end - 2)
             {
-                int xchar = GetChar(bytes, i + 1, 2);
+                var xchar = GetChar(bytes, i + 1, 2);
                 if (xchar != -1)
                 {
                     c = (char)xchar;
                     i += 2;
                 }
             }
+
             result.WriteByte((byte)c);
         }
 
@@ -313,15 +302,15 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (s == null)
             return null;
 
-        if (s == String.Empty)
-            return String.Empty;
+        if (s == string.Empty)
+            return string.Empty;
 
-        bool needEncode = false;
-        int len = s.Length;
-        for (int i = 0; i < len; i++)
+        var needEncode = false;
+        var len = s.Length;
+        for (var i = 0; i < len; i++)
         {
-            char c = s[i];
-            if ((c < '0') || (c < 'A' && c > '9') || (c > 'Z' && c < 'a') || (c > 'z'))
+            var c = s[i];
+            if (c < '0' || (c < 'A' && c > '9') || (c > 'Z' && c < 'a') || c > 'z')
             {
                 if (HttpEncoder.NotEncoded(c))
                     continue;
@@ -335,8 +324,8 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             return s;
 
         // avoided GetByteCount call
-        byte[] bytes = new byte[Enc.GetMaxByteCount(s.Length)];
-        int realLen = Enc.GetBytes(s, 0, s.Length, bytes, 0);
+        var bytes = new byte[Enc.GetMaxByteCount(s.Length)];
+        var realLen = Enc.GetBytes(s, 0, s.Length, bytes, 0);
         return Encoding.ASCII.GetString(UrlEncodeToBytes(bytes, 0, realLen));
     }
 
@@ -346,7 +335,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             return null;
 
         if (bytes.Length == 0)
-            return String.Empty;
+            return string.Empty;
 
         return Encoding.ASCII.GetString(UrlEncodeToBytes(bytes, 0, bytes.Length));
     }
@@ -357,7 +346,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             return null;
 
         if (bytes.Length == 0)
-            return String.Empty;
+            return string.Empty;
 
         return Encoding.ASCII.GetString(UrlEncodeToBytes(bytes, offset, count));
     }
@@ -375,7 +364,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (str.Length == 0)
             return new byte[0];
 
-        byte[] bytes = e.GetBytes(str);
+        var bytes = e.GetBytes(str);
         return UrlEncodeToBytes(bytes, 0, bytes.Length);
     }
 
@@ -413,16 +402,13 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (str.Length == 0)
             return new byte[0];
 
-        MemoryStream result = new MemoryStream(str.Length);
-        foreach (char c in str)
-        {
-            HttpEncoder.UrlEncodeChar(c, result, true);
-        }
+        var result = new MemoryStream(str.Length);
+        foreach (var c in str) HttpEncoder.UrlEncodeChar(c, result, true);
         return result.ToArray();
     }
 
     /// <summary>
-    /// Decodes an HTML-encoded string and returns the decoded string.
+    ///     Decodes an HTML-encoded string and returns the decoded string.
     /// </summary>
     /// <param name="s">The HTML string to decode. </param>
     /// <returns>The decoded text.</returns>
@@ -439,21 +425,15 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
     }
 
     /// <summary>
-    /// Decodes an HTML-encoded string and sends the resulting output to a TextWriter output stream.
+    ///     Decodes an HTML-encoded string and sends the resulting output to a TextWriter output stream.
     /// </summary>
     /// <param name="s">The HTML string to decode</param>
     /// <param name="output">The TextWriter output stream containing the decoded string. </param>
     public static void HtmlDecode(string s, TextWriter output)
     {
-        if (output == null)
-        {
-            throw new ArgumentNullException("output");
-        }
+        if (output == null) throw new ArgumentNullException("output");
 
-        if (!String.IsNullOrEmpty(s))
-        {
-            HttpEncoder.Current.HtmlDecode(s, output);
-        }
+        if (!string.IsNullOrEmpty(s)) HttpEncoder.Current.HtmlDecode(s, output);
     }
 
     public static string HtmlEncode(string s)
@@ -469,29 +449,24 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
     }
 
     /// <summary>
-    /// HTML-encodes a string and sends the resulting output to a TextWriter output stream.
+    ///     HTML-encodes a string and sends the resulting output to a TextWriter output stream.
     /// </summary>
     /// <param name="s">The string to encode. </param>
     /// <param name="output">The TextWriter output stream containing the encoded string. </param>
     public static void HtmlEncode(string s, TextWriter output)
     {
-        if (output == null)
-        {
-            throw new ArgumentNullException("output");
-        }
+        if (output == null) throw new ArgumentNullException("output");
 
-        if (!String.IsNullOrEmpty(s))
-        {
-            HttpEncoder.Current.HtmlEncode(s, output);
-        }
+        if (!string.IsNullOrEmpty(s)) HttpEncoder.Current.HtmlEncode(s, output);
     }
+
     public static string HtmlEncode(object value)
     {
         if (value == null)
             return null;
 
 #if !(MOBILE || NO_SYSTEM_WEB_DEPENDENCY)
-        IHtmlString htmlString = value as IHtmlString;
+        var htmlString = value as IHtmlString;
         if (htmlString != null)
             return htmlString.ToHtmlString();
 #endif
@@ -506,17 +481,17 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
 
     public static string JavaScriptStringEncode(string value, bool addDoubleQuotes)
     {
-        if (String.IsNullOrEmpty(value))
-            return addDoubleQuotes ? "\"\"" : String.Empty;
+        if (string.IsNullOrEmpty(value))
+            return addDoubleQuotes ? "\"\"" : string.Empty;
 
-        int len = value.Length;
-        bool needEncode = false;
+        var len = value.Length;
+        var needEncode = false;
         char c;
-        for (int i = 0; i < len; i++)
+        for (var i = 0; i < len; i++)
         {
             c = value[i];
 
-            if (c >= 0 && c <= 31 || c == 34 || c == 39 || c == 60 || c == 62 || c == 92)
+            if ((c >= 0 && c <= 31) || c == 34 || c == 39 || c == 60 || c == 62 || c == 92)
             {
                 needEncode = true;
                 break;
@@ -530,12 +505,13 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (addDoubleQuotes)
             sb.Append('"');
 
-        for (int i = 0; i < len; i++)
+        for (var i = 0; i < len; i++)
         {
             c = value[i];
-            if (c >= 0 && c <= 7 || c == 11 || c >= 14 && c <= 31 || c == 39 || c == 60 || c == 62)
+            if ((c >= 0 && c <= 7) || c == 11 || (c >= 14 && c <= 31) || c == 39 || c == 60 || c == 62)
                 sb.AppendFormat("\\u{0:x4}", (int)c);
-            else switch ((int)c)
+            else
+                switch ((int)c)
                 {
                     case 8:
                         sb.Append("\\b");
@@ -576,6 +552,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
 
         return sb.ToString();
     }
+
     public static string UrlPathEncode(string s)
     {
         return HttpEncoder.Current.UrlPathEncode(s);
@@ -607,15 +584,14 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         if (query.Length == 0)
             return;
 
-        string decoded = HtmlDecode(query);
-        int decodedLength = decoded.Length;
-        int namePos = 0;
-        bool first = true;
+        var decoded = HtmlDecode(query);
+        var decodedLength = decoded.Length;
+        var namePos = 0;
+        var first = true;
         while (namePos <= decodedLength)
         {
             int valuePos = -1, valueEnd = -1;
-            for (int q = namePos; q < decodedLength; q++)
-            {
+            for (var q = namePos; q < decodedLength; q++)
                 if (valuePos == -1 && decoded[q] == '=')
                 {
                     valuePos = q + 1;
@@ -625,7 +601,6 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
                     valueEnd = q;
                     break;
                 }
-            }
 
             if (first)
             {
@@ -644,6 +619,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             {
                 name = UrlDecode(decoded.Substring(namePos, valuePos - namePos - 1), encoding);
             }
+
             if (valueEnd < 0)
             {
                 namePos = -1;
@@ -653,6 +629,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             {
                 namePos = valueEnd + 1;
             }
+
             value = UrlDecode(decoded.Substring(valuePos, valueEnd - valuePos), encoding);
 
             result.Add(name, value);
@@ -661,35 +638,39 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         }
     }
 
-    sealed class HttpQSCollection : NameValueCollection
+    private sealed class HttpQSCollection : NameValueCollection
     {
         public override string ToString()
         {
-            int count = Count;
+            var count = Count;
             if (count == 0)
                 return "";
-            StringBuilder sb = new StringBuilder();
-            string[] keys = AllKeys;
-            for (int i = 0; i < count; i++)
-            {
-                sb.AppendFormat("{0}={1}&", keys[i], UrlEncode(this[keys[i]]));
-            }
+            var sb = new StringBuilder();
+            var keys = AllKeys;
+            for (var i = 0; i < count; i++) sb.AppendFormat("{0}={1}&", keys[i], UrlEncode(this[keys[i]]));
             if (sb.Length > 0)
                 sb.Length--;
             return sb.ToString();
         }
     }
-    public
-class HttpEncoder
-    {
-        static char[] hexChars = "0123456789abcdef".ToCharArray();
-        static object entitiesLock = new object();
-        static SortedDictionary<string, char> entities;
-        static Lazy<HttpEncoder> defaultEncoder;
-        static Lazy<HttpEncoder> currentEncoderLazy;
-        static HttpEncoder currentEncoder;
 
-        static IDictionary<string, char> Entities
+    public
+        class HttpEncoder
+    {
+        private static readonly char[] hexChars = "0123456789abcdef".ToCharArray();
+        private static readonly object entitiesLock = new object();
+        private static SortedDictionary<string, char> entities;
+        private static readonly Lazy<HttpEncoder> defaultEncoder;
+        private static readonly Lazy<HttpEncoder> currentEncoderLazy;
+        private static HttpEncoder currentEncoder;
+
+        static HttpEncoder()
+        {
+            defaultEncoder = new Lazy<HttpEncoder>(() => new HttpEncoder());
+            currentEncoderLazy = new Lazy<HttpEncoder>(GetCustomEncoderFromConfig);
+        }
+
+        private static IDictionary<string, char> Entities
         {
             get
             {
@@ -719,38 +700,24 @@ class HttpEncoder
             }
         }
 
-        public static HttpEncoder Default
-        {
-            get
-            {
-                return defaultEncoder.Value;
-            }
-        }
+        public static HttpEncoder Default => defaultEncoder.Value;
 
-        static HttpEncoder()
-        {
-            defaultEncoder = new Lazy<HttpEncoder>(() => new HttpEncoder());
-            currentEncoderLazy = new Lazy<HttpEncoder>(new Func<HttpEncoder>(GetCustomEncoderFromConfig));
-        }
-
-        public HttpEncoder()
-        {
-        }
         protected internal virtual
-        void HeaderNameValueEncode(string headerName, string headerValue, out string encodedHeaderName, out string encodedHeaderValue)
+            void HeaderNameValueEncode(string headerName, string headerValue, out string encodedHeaderName,
+                out string encodedHeaderValue)
         {
-            if (String.IsNullOrEmpty(headerName))
+            if (string.IsNullOrEmpty(headerName))
                 encodedHeaderName = headerName;
             else
                 encodedHeaderName = EncodeHeaderString(headerName);
 
-            if (String.IsNullOrEmpty(headerValue))
+            if (string.IsNullOrEmpty(headerValue))
                 encodedHeaderValue = headerValue;
             else
                 encodedHeaderValue = EncodeHeaderString(headerValue);
         }
 
-        static void StringBuilderAppend(string s, ref StringBuilder sb)
+        private static void StringBuilderAppend(string s, ref StringBuilder sb)
         {
             if (sb == null)
                 sb = new StringBuilder(s);
@@ -758,16 +725,16 @@ class HttpEncoder
                 sb.Append(s);
         }
 
-        static string EncodeHeaderString(string input)
+        private static string EncodeHeaderString(string input)
         {
             StringBuilder sb = null;
 
-            for (int i = 0; i < input.Length; i++)
+            for (var i = 0; i < input.Length; i++)
             {
-                char ch = input[i];
+                var ch = input[i];
 
                 if ((ch < 32 && ch != 9) || ch == 127)
-                    StringBuilderAppend(String.Format("%{0:x2}", (int)ch), ref sb);
+                    StringBuilderAppend(string.Format("%{0:x2}", (int)ch), ref sb);
             }
 
             if (sb != null)
@@ -775,13 +742,13 @@ class HttpEncoder
 
             return input;
         }
+
         protected internal virtual void HtmlAttributeEncode(string value, TextWriter output)
         {
-
             if (output == null)
                 throw new ArgumentNullException("output");
 
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
                 return;
 
             output.Write(HtmlAttributeEncode(value));
@@ -808,19 +775,20 @@ class HttpEncoder
             return UrlEncodeToBytes(bytes, offset, count);
         }
 
-        static HttpEncoder GetCustomEncoderFromConfig()
+        private static HttpEncoder GetCustomEncoderFromConfig()
         {
             return defaultEncoder.Value;
         }
+
         protected internal virtual
-        string UrlPathEncode(string value)
+            string UrlPathEncode(string value)
         {
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
                 return value;
 
-            MemoryStream result = new MemoryStream();
-            int length = value.Length;
-            for (int i = 0; i < length; i++)
+            var result = new MemoryStream();
+            var length = value.Length;
+            for (var i = 0; i < length; i++)
                 UrlPathEncodeChar(value[i], result);
 
             return Encoding.ASCII.GetString(result.ToArray());
@@ -831,7 +799,7 @@ class HttpEncoder
             if (bytes == null)
                 throw new ArgumentNullException("bytes");
 
-            int blen = bytes.Length;
+            var blen = bytes.Length;
             if (blen == 0)
                 return new byte[0];
 
@@ -841,9 +809,9 @@ class HttpEncoder
             if (count < 0 || count > blen - offset)
                 throw new ArgumentOutOfRangeException("count");
 
-            MemoryStream result = new MemoryStream(count);
-            int end = offset + count;
-            for (int i = offset; i < end; i++)
+            var result = new MemoryStream(count);
+            var end = offset + count;
+            for (var i = offset; i < end; i++)
                 UrlEncodeChar((char)bytes[i], result, false);
 
             return result.ToArray();
@@ -855,15 +823,15 @@ class HttpEncoder
                 return null;
 
             if (s.Length == 0)
-                return String.Empty;
+                return string.Empty;
 
-            bool needEncode = false;
-            for (int i = 0; i < s.Length; i++)
+            var needEncode = false;
+            for (var i = 0; i < s.Length; i++)
             {
-                char c = s[i];
+                var c = s[i];
                 if (c == '&' || c == '"' || c == '<' || c == '>' || c > 159
                     || c == '\''
-                )
+                   )
                 {
                     needEncode = true;
                     break;
@@ -873,12 +841,12 @@ class HttpEncoder
             if (!needEncode)
                 return s;
 
-            StringBuilder output = new StringBuilder();
-            int len = s.Length;
+            var output = new StringBuilder();
+            var len = s.Length;
 
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
-                char ch = s[i];
+                var ch = s[i];
                 switch (ch)
                 {
                     case '&':
@@ -912,7 +880,10 @@ class HttpEncoder
                             output.Append(";");
                         }
                         else
+                        {
                             output.Append(ch);
+                        }
+
                         break;
                 }
             }
@@ -922,15 +893,15 @@ class HttpEncoder
 
         internal static string HtmlAttributeEncode(string s)
         {
-            if (String.IsNullOrEmpty(s))
-                return String.Empty;
-            bool needEncode = false;
-            for (int i = 0; i < s.Length; i++)
+            if (string.IsNullOrEmpty(s))
+                return string.Empty;
+            var needEncode = false;
+            for (var i = 0; i < s.Length; i++)
             {
-                char c = s[i];
+                var c = s[i];
                 if (c == '&' || c == '"' || c == '<'
                     || c == '\''
-                )
+                   )
                 {
                     needEncode = true;
                     break;
@@ -940,12 +911,12 @@ class HttpEncoder
             if (!needEncode)
                 return s;
 
-            StringBuilder output = new StringBuilder();
-            int len = s.Length;
+            var output = new StringBuilder();
+            var len = s.Length;
 
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
-                char ch = s[i];
+                var ch = s[i];
                 switch (ch)
                 {
                     case '&':
@@ -975,26 +946,26 @@ class HttpEncoder
                 return null;
 
             if (s.Length == 0)
-                return String.Empty;
+                return string.Empty;
 
             if (s.IndexOf('&') == -1)
                 return s;
-            StringBuilder rawEntity = new StringBuilder();
-            StringBuilder entity = new StringBuilder();
-            StringBuilder output = new StringBuilder();
-            int len = s.Length;
+            var rawEntity = new StringBuilder();
+            var entity = new StringBuilder();
+            var output = new StringBuilder();
+            var len = s.Length;
             // 0 -> nothing,
             // 1 -> right after '&'
             // 2 -> between '&' and ';' but no '#'
             // 3 -> '#' found after '&' and getting numbers
-            int state = 0;
-            int number = 0;
-            bool is_hex_value = false;
-            bool have_trailing_digits = false;
+            var state = 0;
+            var number = 0;
+            var is_hex_value = false;
+            var have_trailing_digits = false;
 
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
-                char c = s[i];
+                var c = s[i];
                 if (state == 0)
                 {
                     if (c == '&')
@@ -1007,6 +978,7 @@ class HttpEncoder
                     {
                         output.Append(c);
                     }
+
                     continue;
                 }
 
@@ -1019,7 +991,7 @@ class HttpEncoder
                         have_trailing_digits = false;
                     }
 
-                    output.Append(entity.ToString());
+                    output.Append(entity);
                     entity.Length = 0;
                     entity.Append('&');
                     continue;
@@ -1030,7 +1002,7 @@ class HttpEncoder
                     if (c == ';')
                     {
                         state = 0;
-                        output.Append(entity.ToString());
+                        output.Append(entity);
                         output.Append(c);
                         entity.Length = 0;
                     }
@@ -1039,13 +1011,9 @@ class HttpEncoder
                         number = 0;
                         is_hex_value = false;
                         if (c != '#')
-                        {
                             state = 2;
-                        }
                         else
-                        {
                             state = 3;
-                        }
                         entity.Append(c);
                         rawEntity.Append(c);
                     }
@@ -1055,7 +1023,7 @@ class HttpEncoder
                     entity.Append(c);
                     if (c == ';')
                     {
-                        string key = entity.ToString();
+                        var key = entity.ToString();
                         if (key.Length > 1 && Entities.ContainsKey(key.Substring(1, key.Length - 2)))
                             key = Entities[key.Substring(1, key.Length - 2)].ToString();
 
@@ -1070,9 +1038,10 @@ class HttpEncoder
                     if (c == ';')
                     {
                         if (number == 0)
-                            output.Append(rawEntity.ToString() + ";");
-                        else
-                        if (number > 65535)
+                        {
+                            output.Append(rawEntity + ";");
+                        }
+                        else if (number > 65535)
                         {
                             output.Append("&#");
                             output.Append(number.ToString(Helpers.InvariantCulture));
@@ -1082,6 +1051,7 @@ class HttpEncoder
                         {
                             output.Append((char)number);
                         }
+
                         state = 0;
                         entity.Length = 0;
                         rawEntity.Length = 0;
@@ -1093,9 +1063,9 @@ class HttpEncoder
                         have_trailing_digits = true;
                         rawEntity.Append(c);
                     }
-                    else if (Char.IsDigit(c))
+                    else if (char.IsDigit(c))
                     {
-                        number = number * 10 + ((int)c - '0');
+                        number = number * 10 + (c - '0');
                         have_trailing_digits = true;
                         rawEntity.Append(c);
                     }
@@ -1112,26 +1082,21 @@ class HttpEncoder
                             entity.Append(number.ToString(Helpers.InvariantCulture));
                             have_trailing_digits = false;
                         }
+
                         entity.Append(c);
                     }
                 }
             }
 
             if (entity.Length > 0)
-            {
-                output.Append(entity.ToString());
-            }
-            else if (have_trailing_digits)
-            {
-                output.Append(number.ToString(Helpers.InvariantCulture));
-            }
+                output.Append(entity);
+            else if (have_trailing_digits) output.Append(number.ToString(Helpers.InvariantCulture));
             return output.ToString();
         }
 
         internal static bool NotEncoded(char c)
         {
-            return (c == '!' || c == '(' || c == ')' || c == '*' || c == '-' || c == '.' || c == '_'
-            );
+            return c == '!' || c == '(' || c == ')' || c == '*' || c == '-' || c == '.' || c == '_';
         }
 
         internal static void UrlEncodeChar(char c, Stream result, bool isUnicode)
@@ -1142,7 +1107,7 @@ class HttpEncoder
                 //if (!isUnicode)
                 //	throw new ArgumentOutOfRangeException ("c", c, "c must be less than 256");
                 int idx;
-                int i = (int)c;
+                int i = c;
 
                 result.WriteByte((byte)'%');
                 result.WriteByte((byte)'u');
@@ -1162,15 +1127,17 @@ class HttpEncoder
                 result.WriteByte((byte)c);
                 return;
             }
+
             if (c == ' ')
             {
                 result.WriteByte((byte)'+');
                 return;
             }
-            if ((c < '0') ||
+
+            if (c < '0' ||
                 (c < 'A' && c > '9') ||
                 (c > 'Z' && c < 'a') ||
-                (c > 'z'))
+                c > 'z')
             {
                 if (isUnicode && c > 127)
                 {
@@ -1180,28 +1147,32 @@ class HttpEncoder
                     result.WriteByte((byte)'0');
                 }
                 else
+                {
                     result.WriteByte((byte)'%');
+                }
 
-                int idx = ((int)c) >> 4;
+                var idx = c >> 4;
                 result.WriteByte((byte)hexChars[idx]);
-                idx = ((int)c) & 0x0F;
+                idx = c & 0x0F;
                 result.WriteByte((byte)hexChars[idx]);
             }
             else
+            {
                 result.WriteByte((byte)c);
+            }
         }
 
         internal static void UrlPathEncodeChar(char c, Stream result)
         {
             if (c < 33 || c > 126)
             {
-                byte[] bIn = Encoding.UTF8.GetBytes(c.ToString());
-                for (int i = 0; i < bIn.Length; i++)
+                var bIn = Encoding.UTF8.GetBytes(c.ToString());
+                for (var i = 0; i < bIn.Length; i++)
                 {
                     result.WriteByte((byte)'%');
-                    int idx = ((int)bIn[i]) >> 4;
+                    var idx = bIn[i] >> 4;
                     result.WriteByte((byte)hexChars[idx]);
-                    idx = ((int)bIn[i]) & 0x0F;
+                    idx = bIn[i] & 0x0F;
                     result.WriteByte((byte)hexChars[idx]);
                 }
             }
@@ -1212,10 +1183,12 @@ class HttpEncoder
                 result.WriteByte((byte)'0');
             }
             else
+            {
                 result.WriteByte((byte)c);
+            }
         }
 
-        static void InitEntities()
+        private static void InitEntities()
         {
             // Build the hash table of HTML entity references.  This list comes
             // from the HTML 4.01 W3C recommendation.
@@ -1476,7 +1449,7 @@ class HttpEncoder
         }
     }
 
-    class Helpers
+    private class Helpers
     {
         public static readonly CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
     }

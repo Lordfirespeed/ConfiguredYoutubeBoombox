@@ -7,29 +7,37 @@ using System.Reflection;
 namespace YoutubeDLSharp.Options
 {
     /// <summary>
-    /// Represents a set of options for yt-dlp.
+    ///     Represents a set of options for yt-dlp.
     /// </summary>
     public partial class OptionSet : ICloneable
     {
         private static readonly OptionComparer Comparer = new OptionComparer();
-        
+
         /// <summary>
-        /// The default option set (if no options are explicitly set).
+        ///     The default option set (if no options are explicitly set).
         /// </summary>
         public static readonly OptionSet Default = new OptionSet();
 
+        public object Clone()
+        {
+            return FromString(GetOptionFlags());
+        }
+
         /// <summary>
-        /// Writes all options to a config file with the specified path.
+        ///     Writes all options to a config file with the specified path.
         /// </summary>
         public void WriteConfigFile(string path)
         {
             File.WriteAllLines(path, GetOptionFlags());
         }
 
-        public override string ToString() => " " + String.Join(" ", GetOptionFlags());
+        public override string ToString()
+        {
+            return " " + string.Join(" ", GetOptionFlags());
+        }
 
         /// <summary>
-        /// Returns an enumerable of all option flags.
+        ///     Returns an enumerable of all option flags.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<string> GetOptionFlags()
@@ -42,57 +50,55 @@ namespace YoutubeDLSharp.Options
 
         internal IEnumerable<IOption> GetKnownOptions()
         {
-            return this.GetType()
+            return GetType()
                 .GetRuntimeFields()
                 .Where(p => p.FieldType.IsGenericType && p.FieldType.GetInterfaces().Contains(typeof(IOption)))
                 .Select(p => p.GetValue(this)).Cast<IOption>();
         }
 
         /// <summary>
-        /// Creates a clone of this option set and overrides all options with non-default values set in the given option set.
+        ///     Creates a clone of this option set and overrides all options with non-default values set in the given option set.
         /// </summary>
         /// <param name="overrideOptions">All non-default option values of this option set will be copied to the cloned option set.</param>
         /// <returns>A cloned option set with all specified options overriden.</returns>
         public OptionSet OverrideOptions(OptionSet overrideOptions)
         {
-            var cloned = (OptionSet) Clone();
+            var cloned = (OptionSet)Clone();
             cloned.CustomOptions = cloned.CustomOptions
                 .Concat(overrideOptions.CustomOptions)
                 .Distinct(Comparer)
                 .ToArray();
 
-            IEnumerable<FieldInfo> overrideFields = overrideOptions.GetType().GetRuntimeFields()
+            var overrideFields = overrideOptions.GetType().GetRuntimeFields()
                 .Where(p => p.FieldType.IsGenericType && p.FieldType.GetInterfaces().Contains(typeof(IOption)));
-            
+
             foreach (var field in overrideFields)
             {
                 var fieldValue = (IOption)field.GetValue(overrideOptions);
                 if (fieldValue.IsSet)
-                {
                     cloned.GetType()
                         .GetField(field.Name, BindingFlags.NonPublic | BindingFlags.Instance)
                         .SetValue(cloned, fieldValue);
-                }
             }
-            
-            
+
+
             return cloned;
         }
 
         /// <summary>
-        /// Creates an option set from an array of command-line option strings.
+        ///     Creates an option set from an array of command-line option strings.
         /// </summary>
         /// <param name="lines">An array containing one command-line option string per item.</param>
         /// <returns>The parsed OptionSet.</returns>
         public static OptionSet FromString(IEnumerable<string> lines)
         {
             var optSet = new OptionSet();
-            
+
             var customOptions = GetOptions(lines, optSet.GetKnownOptions())
                 .Where(option => option.IsCustom)
                 .ToArray();
             optSet.CustomOptions = customOptions;
-            
+
             return optSet;
         }
 
@@ -100,23 +106,20 @@ namespace YoutubeDLSharp.Options
         {
             IEnumerable<IOption> knownOptions = options.ToList();
 
-            foreach (string rawLine in lines)
+            foreach (var rawLine in lines)
             {
-                string line = rawLine.Trim();
-                
+                var line = rawLine.Trim();
+
                 // skip comments
-                if (line.StartsWith("#") || string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
+                if (line.StartsWith("#") || string.IsNullOrWhiteSpace(line)) continue;
 
-                string[] segments = line.Split(' ');
-                string flag = segments[0];
+                var segments = line.Split(' ');
+                var flag = segments[0];
 
-                IOption knownOption = knownOptions.FirstOrDefault(o => o.OptionStrings.Contains(flag));
-                IOption customOption = segments.Length > 1 
-                    ? (IOption) new Option<string>(isCustom: true, flag) 
-                    : (IOption) new Option<bool>(isCustom: true, flag);
+                var knownOption = knownOptions.FirstOrDefault(o => o.OptionStrings.Contains(flag));
+                var customOption = segments.Length > 1
+                    ? new Option<string>(true, flag)
+                    : (IOption)new Option<bool>(true, flag);
 
                 var option = knownOption ?? customOption;
 
@@ -126,18 +129,13 @@ namespace YoutubeDLSharp.Options
         }
 
         /// <summary>
-        /// Loads an option set from a yt-dlp config file.
+        ///     Loads an option set from a yt-dlp config file.
         /// </summary>
         /// <param name="path">The path to the config file.</param>
         /// <returns>The loaded OptionSet.</returns>
         public static OptionSet LoadConfigFile(string path)
         {
             return FromString(File.ReadAllLines(path));
-        }
-
-        public object Clone()
-        {
-            return OptionSet.FromString(this.GetOptionFlags());
         }
     }
 }

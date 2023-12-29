@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace YoutubeDLSharp.Helpers
 {
     /// <summary>
-    /// Process extensions for killing full process tree.
-    /// From https://github.com/dotnet/cli/blob/master/test/Microsoft.DotNet.Tools.Tests.Utilities/Extensions/ProcessExtensions.cs.
+    ///     Process extensions for killing full process tree.
+    ///     From
+    ///     https://github.com/dotnet/cli/blob/master/test/Microsoft.DotNet.Tools.Tests.Utilities/Extensions/ProcessExtensions.cs.
     /// </summary>
     internal static class ProcessExtensions
     {
@@ -34,10 +34,7 @@ namespace YoutubeDLSharp.Helpers
             {
                 var children = new HashSet<int>();
                 GetAllChildIdsUnix(process.Id, children, timeout);
-                foreach (var childId in children)
-                {
-                    KillProcessUnix(childId, timeout);
-                }
+                foreach (var childId in children) KillProcessUnix(childId, timeout);
                 KillProcessUnix(process.Id, timeout);
             }
         }
@@ -52,16 +49,12 @@ namespace YoutubeDLSharp.Helpers
                 out stdout);
 
             if (exitCode == 0 && !string.IsNullOrEmpty(stdout))
-            {
                 using (var reader = new StringReader(stdout))
                 {
                     while (true)
                     {
                         var text = reader.ReadLine();
-                        if (text == null)
-                        {
-                            return;
-                        }
+                        if (text == null) return;
 
                         int id;
                         if (int.TryParse(text, out id))
@@ -71,7 +64,6 @@ namespace YoutubeDLSharp.Helpers
                         }
                     }
                 }
-            }
         }
 
         private static void KillProcessUnix(int processId, TimeSpan timeout)
@@ -84,7 +76,8 @@ namespace YoutubeDLSharp.Helpers
                 out stdout);
         }
 
-        private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
+        private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout,
+            out string stdout)
         {
             var startInfo = new ProcessStartInfo
             {
@@ -99,13 +92,9 @@ namespace YoutubeDLSharp.Helpers
 
             stdout = null;
             if (process.WaitForExit((int)timeout.TotalMilliseconds))
-            {
                 stdout = process.StandardOutput.ReadToEnd();
-            }
             else
-            {
                 process.Kill();
-            }
 
             return process.ExitCode;
         }

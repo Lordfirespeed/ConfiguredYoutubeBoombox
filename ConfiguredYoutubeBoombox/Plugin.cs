@@ -1,44 +1,26 @@
-﻿using BepInEx;
-using HarmonyLib;
-using YoutubeDLSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using UnityEngine;
-using UnityEngine.Networking;
-using System.Collections;
-using GameNetcodeStuff;
-using Unity.Netcode;
-using System.Reflection.Emit;
-using UnityEngine.Pool;
-using UnityEngine.UIElements;
-using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
-using System.ComponentModel;
-using Newtonsoft.Json.Linq;
-using BepInEx.Configuration;
-using YoutubeDLSharp.Metadata;
-using System.Security.Policy;
-using Newtonsoft.Json;
-using System.Reflection;
-using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using BepInEx;
+using BepInEx.Configuration;
 using ConfiguredYoutubeBoombox.Providers;
+using HarmonyLib;
+using Newtonsoft.Json;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using YoutubeDLSharp;
 
 namespace ConfiguredYoutubeBoombox
 {
     public class InfoCache : IProgress<string>
     {
-        public class Info
-        {
-            public string id { get; set; }
-            public float duration { get; set; }
-        }
-
-        public string Id { get; set; }
+        public static Dictionary<string, float> DurationCache = new Dictionary<string, float>();
+        public static Dictionary<string, List<string>> PlaylistCache = new Dictionary<string, List<string>>();
 
         public InfoCache(string id)
         {
@@ -47,23 +29,27 @@ namespace ConfiguredYoutubeBoombox
             PlaylistCache.Add(id, new List<string>());
         }
 
-        public static Dictionary<string, float> DurationCache = new Dictionary<string, float>();
-        public static Dictionary<string, List<string>> PlaylistCache = new Dictionary<string, List<string>>();
+        public string Id { get; set; }
 
         public void Report(string value)
         {
             try
             {
-                Info json = JsonConvert.DeserializeObject<Info>(value);
+                var json = JsonConvert.DeserializeObject<Info>(value);
 
-                if (!DurationCache.ContainsKey(json.id))
-                {
-                    DurationCache.Add(json.id, json.duration);
-                }
+                if (!DurationCache.ContainsKey(json.id)) DurationCache.Add(json.id, json.duration);
 
                 PlaylistCache[Id].Add(json.id);
+            }
+            catch
+            {
+            }
+        }
 
-            } catch { }
+        public class Info
+        {
+            public string id { get; set; }
+            public float duration { get; set; }
         }
     }
 
@@ -79,60 +65,33 @@ namespace ConfiguredYoutubeBoombox
 
         internal static Plugin Singleton { get; private set; }
 
-        public static YoutubeDL YoutubeDL { get; private set; } = new YoutubeDL();
-
-        #region Config
-        internal static ConfigEntry<int> MaxCachedDownloads { get; private set; }
-
-        internal static ConfigEntry<bool> DeleteDownloadsOnRestart { get; private set; }
-
-        internal static ConfigEntry<float> MaxSongDuration { get; private set; }
-
-        internal static ConfigEntry<bool> EnableDebugLogs { get; private set; }
-
-        internal static ConfigEntry<Key> CustomBoomboxButton { get; private set; }
-        #endregion
+        public static YoutubeDL YoutubeDL { get; } = new YoutubeDL();
 
         internal static List<string> PathsThisSession { get; private set; } = new List<string>();
 
         internal static List<Provider> Providers { get; } = new List<Provider>();
 
-        public static void LogInfo(object data)
-        {
-            Singleton.Logger.LogInfo(data);
-        }
-
-        public static void LogError(object data)
-        {
-            Singleton.Logger.LogError(data);
-        }
-
-        public static void DebugLog(object data, bool shouldLog = true)
-        {
-            if (shouldLog)
-            {
-                Singleton.Logger.LogInfo(data);
-            }
-        }
-
-        async void Awake()
+        private async void Awake()
         {
             Singleton = this;
 
-            MaxCachedDownloads = Config.Bind(new ConfigDefinition("General", "Max Cached Downloads"), 10, new ConfigDescription("The maximum number of downloaded songs that can be saved before deleting.", new ConfigNumberClamper(1, 100)));
-            DeleteDownloadsOnRestart = Config.Bind("General", "Delete Downloads On Restart", true, "Whether or not to delete downloads when your game starts again.");
-            MaxSongDuration = Config.Bind("General", "Max Song Duration", 600f, "Maximum song duration in seconds. Any video longer than this will not be downloaded.");
+            MaxCachedDownloads = Config.Bind(new ConfigDefinition("General", "Max Cached Downloads"), 10,
+                new ConfigDescription("The maximum number of downloaded songs that can be saved before deleting.",
+                    new ConfigNumberClamper(1, 100)));
+            DeleteDownloadsOnRestart = Config.Bind("General", "Delete Downloads On Restart", true,
+                "Whether or not to delete downloads when your game starts again.");
+            MaxSongDuration = Config.Bind("General", "Max Song Duration", 600f,
+                "Maximum song duration in seconds. Any video longer than this will not be downloaded.");
 
-            EnableDebugLogs = Config.Bind("Debugging", "Enable Debug Logs", false, "Whether or not to enable debug logs.");
+            EnableDebugLogs = Config.Bind("Debugging", "Enable Debug Logs", false,
+                "Whether or not to enable debug logs.");
 
-            CustomBoomboxButton = Config.Bind("Keybinds", "Open Menu Key", Key.B, "The button you need to press to open the youtube boombox gui.");
+            CustomBoomboxButton = Config.Bind("Keybinds", "Open Menu Key", Key.B,
+                "The button you need to press to open the youtube boombox gui.");
 
-            string oldDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Youtube-Boombox");
+            var oldDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Youtube-Boombox");
 
-            if (Directory.Exists(oldDirectoryPath))
-            {
-                Directory.Delete(oldDirectoryPath, true);
-            }
+            if (Directory.Exists(oldDirectoryPath)) Directory.Delete(oldDirectoryPath, true);
 
             DirectoryPath = Path.Combine(Paths.PluginPath, "steven4547466-YoutubeBoombox", "data");
             DownloadsPath = Path.Combine(DirectoryPath, "Downloads");
@@ -141,15 +100,13 @@ namespace ConfiguredYoutubeBoombox
             if (!Directory.Exists(DownloadsPath)) Directory.CreateDirectory(DownloadsPath);
 
             if (DeleteDownloadsOnRestart.Value)
-            {
-                foreach (string file in Directory.GetFiles(DownloadsPath))
-                {
+                foreach (var file in Directory.GetFiles(DownloadsPath))
                     File.Delete(file);
-                }
-            }
 
-            if (!Directory.GetFiles(DirectoryPath).Any(file => file.Contains("yt-dl"))) await Utils.DownloadYtDlp(DirectoryPath);
-            if (!Directory.GetFiles(DirectoryPath).Any(file => file.Contains("ffmpeg"))) await Utils.DownloadFFmpeg(DirectoryPath);
+            if (!Directory.GetFiles(DirectoryPath).Any(file => file.Contains("yt-dl")))
+                await Utils.DownloadYtDlp(DirectoryPath);
+            if (!Directory.GetFiles(DirectoryPath).Any(file => file.Contains("ffmpeg")))
+                await Utils.DownloadFFmpeg(DirectoryPath);
 
             YoutubeDL.YoutubeDLPath = Directory.GetFiles(DirectoryPath).First(file => file.Contains("yt-dl"));
             YoutubeDL.FFmpegPath = Directory.GetFiles(DirectoryPath).First(file => file.Contains("ffmpeg"));
@@ -164,37 +121,36 @@ namespace ConfiguredYoutubeBoombox
 
             SetupNetworking();
 
-            LC_API.ClientAPI.CommandHandler.RegisterCommand("bbv", new List<string>() { "boomboxvolume" }, (string[] args) =>
-            {
-                if (args.Length > 0 && float.TryParse(args[0], out float volume))
+            LC_API.ClientAPI.CommandHandler.RegisterCommand("bbv", new List<string> { "boomboxvolume" },
+                (string[] args) =>
                 {
-                    PlayerControllerB localController = StartOfRound.Instance.localPlayerController;
-                    if (localController.currentlyHeldObjectServer is BoomboxItem boombox)
+                    if (args.Length > 0 && float.TryParse(args[0], out var volume))
                     {
-                        boombox.boomboxAudio.volume = volume / 100;
-                    }
-                    else
-                    {
-                        BoomboxItem closestBoombox = null;
-                        float distanceSqr = float.MaxValue;
-
-                        foreach (BoomboxItem boomboxItem in FindObjectsOfType<BoomboxItem>())
+                        var localController = StartOfRound.Instance.localPlayerController;
+                        if (localController.currentlyHeldObjectServer is BoomboxItem boombox)
                         {
-                            float dist = (boomboxItem.transform.position - localController.transform.position).sqrMagnitude;
-                            if (dist < distanceSqr)
+                            boombox.boomboxAudio.volume = volume / 100;
+                        }
+                        else
+                        {
+                            BoomboxItem closestBoombox = null;
+                            var distanceSqr = float.MaxValue;
+
+                            foreach (var boomboxItem in FindObjectsOfType<BoomboxItem>())
                             {
-                                closestBoombox = boomboxItem;
-                                distanceSqr = dist;
+                                var dist = (boomboxItem.transform.position - localController.transform.position)
+                                    .sqrMagnitude;
+                                if (dist < distanceSqr)
+                                {
+                                    closestBoombox = boomboxItem;
+                                    distanceSqr = dist;
+                                }
                             }
-                        }
 
-                        if (distanceSqr <= 255)
-                        {
-                            closestBoombox.boomboxAudio.volume = volume / 100;
+                            if (distanceSqr <= 255) closestBoombox.boomboxAudio.volume = volume / 100;
                         }
                     }
-                }
-            });
+                });
 
             //LC_API.ClientAPI.CommandHandler.RegisterCommand("spawnbox", (string[] args) =>
             //{
@@ -219,13 +175,24 @@ namespace ConfiguredYoutubeBoombox
 
             var method = new StackTrace().GetFrame(0).GetMethod();
             var assembly = method.ReflectedType.Assembly;
-            foreach (Type t in AccessTools.GetTypesFromAssembly(assembly))
-            {
+            foreach (var t in AccessTools.GetTypesFromAssembly(assembly))
                 if (t.IsSubclassOf(typeof(Provider)))
-                {
                     Providers.Add(Activator.CreateInstance(t) as Provider);
-                }
-            }
+        }
+
+        public static void LogInfo(object data)
+        {
+            Singleton.Logger.LogInfo(data);
+        }
+
+        public static void LogError(object data)
+        {
+            Singleton.Logger.LogError(data);
+        }
+
+        public static void DebugLog(object data, bool shouldLog = true)
+        {
+            if (shouldLog) Singleton.Logger.LogInfo(data);
         }
 
         private void SetupNetworking()
@@ -237,58 +204,56 @@ namespace ConfiguredYoutubeBoombox
                 foreach (var method in methods)
                 {
                     var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-                    if (attributes.Length > 0)
-                    {
-                        method.Invoke(null, null);
-                    }
+                    if (attributes.Length > 0) method.Invoke(null, null);
                 }
             }
         }
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
-        class GameNetworkManagerPatch
+        private class GameNetworkManagerPatch
         {
             public static void Postfix(GameNetworkManager __instance)
             {
-                foreach (NetworkPrefab prefab in __instance.GetComponent<NetworkManager>().NetworkConfig.Prefabs.Prefabs)
-                {
+                foreach (var prefab in __instance.GetComponent<NetworkManager>().NetworkConfig.Prefabs.Prefabs)
                     if (prefab.Prefab.GetComponent<BoomboxItem>() != null)
                     {
                         prefab.Prefab.AddComponent<BoomboxController>();
 
                         break;
                     }
-                }
             }
         }
 
         [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.UseItemOnClient))]
-        class PreventRpc
+        private class PreventRpc
         {
             public static bool IsBoomboxAndGUIShowing(GrabbableObject obj)
             {
-                return obj is BoomboxItem && obj.gameObject.TryGetComponent(out BoomboxController controller) && controller.IsGUIShowing();
+                return obj is BoomboxItem && obj.gameObject.TryGetComponent(out BoomboxController controller) &&
+                       controller.IsGUIShowing();
             }
 
-            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions,
+                ILGenerator generator)
             {
-                List<CodeInstruction> newInstructions = new List<CodeInstruction>(instructions);
-                int index = newInstructions.FindLastIndex(i => i.opcode == OpCodes.Ldarg_0) - 1;
+                var newInstructions = new List<CodeInstruction>(instructions);
+                var index = newInstructions.FindLastIndex(i => i.opcode == OpCodes.Ldarg_0) - 1;
 
-                System.Reflection.Emit.Label skipLabel = generator.DefineLabel();
+                var skipLabel = generator.DefineLabel();
 
                 newInstructions[index].labels.Add(skipLabel);
 
                 index = newInstructions.FindLastIndex(i => i.opcode == OpCodes.Brfalse_S) + 1;
 
-                newInstructions.InsertRange(index, new CodeInstruction[]
+                newInstructions.InsertRange(index, new[]
                 {
                     new CodeInstruction(OpCodes.Ldarg_0),
-                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PreventRpc), nameof(PreventRpc.IsBoomboxAndGUIShowing))),
+                    new CodeInstruction(OpCodes.Call,
+                        AccessTools.Method(typeof(PreventRpc), nameof(IsBoomboxAndGUIShowing))),
                     new CodeInstruction(OpCodes.Brtrue_S, skipLabel)
                 });
 
-                for (int z = 0; z < newInstructions.Count; z++) yield return newInstructions[z];
+                for (var z = 0; z < newInstructions.Count; z++) yield return newInstructions[z];
             }
         }
 
@@ -307,5 +272,19 @@ namespace ConfiguredYoutubeBoombox
                 return true;
             }
         }
+
+        #region Config
+
+        internal static ConfigEntry<int> MaxCachedDownloads { get; private set; }
+
+        internal static ConfigEntry<bool> DeleteDownloadsOnRestart { get; private set; }
+
+        internal static ConfigEntry<float> MaxSongDuration { get; private set; }
+
+        internal static ConfigEntry<bool> EnableDebugLogs { get; private set; }
+
+        internal static ConfigEntry<Key> CustomBoomboxButton { get; private set; }
+
+        #endregion
     }
 }
