@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 
-namespace YoutubeDLSharp.Options
+namespace YoutubeDLSharp.Options;
+
+internal class OptionComparer : IEqualityComparer<IOption>
 {
-    internal class OptionComparer : IEqualityComparer<IOption>
+    public bool Equals(IOption x, IOption y)
     {
-        public bool Equals(IOption x, IOption y)
-        {
-            if (x != null) return y != null && x.ToString().Equals(y.ToString());
+        if (x != null) return y != null && x.ToString().Equals(y.ToString());
 
-            return y == null;
-        }
+        return y == null;
+    }
 
-        public int GetHashCode(IOption obj)
-        {
-            return obj.ToString().GetHashCode();
-        }
+    public int GetHashCode(IOption obj)
+    {
+        return obj.ToString().GetHashCode();
     }
 }

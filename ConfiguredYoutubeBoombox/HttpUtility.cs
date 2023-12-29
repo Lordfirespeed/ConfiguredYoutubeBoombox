@@ -658,7 +658,7 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
         class HttpEncoder
     {
         private static readonly char[] hexChars = "0123456789abcdef".ToCharArray();
-        private static readonly object entitiesLock = new object();
+        private static readonly object entitiesLock = new();
         private static SortedDictionary<string, char> entities;
         private static readonly Lazy<HttpEncoder> defaultEncoder;
         private static readonly Lazy<HttpEncoder> currentEncoderLazy;
@@ -670,10 +670,8 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             currentEncoderLazy = new Lazy<HttpEncoder>(GetCustomEncoderFromConfig);
         }
 
-        private static IDictionary<string, char> Entities
-        {
-            get
-            {
+        private static IDictionary<string, char> Entities {
+            get {
                 lock (entitiesLock)
                 {
                     if (entities == null)
@@ -684,16 +682,13 @@ public sealed class HttpUtility // https://github.com/mono/mono/tree/master/mcs/
             }
         }
 
-        public static HttpEncoder Current
-        {
-            get
-            {
+        public static HttpEncoder Current {
+            get {
                 if (currentEncoder == null)
                     currentEncoder = currentEncoderLazy.Value;
                 return currentEncoder;
             }
-            set
-            {
+            set {
                 if (value == null)
                     throw new ArgumentNullException("value");
                 currentEncoder = value;
