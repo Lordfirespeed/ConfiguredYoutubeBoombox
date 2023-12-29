@@ -83,10 +83,6 @@ public class Plugin : BaseUnityPlugin
              new ConfigDescription("Maximum song duration in seconds. Any video longer than this will not be downloaded.")
         );
 
-        var oldDirectoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Youtube-Boombox");
-
-        if (Directory.Exists(oldDirectoryPath)) Directory.Delete(oldDirectoryPath, true);
-
         PluginDataPath = Path.Combine(Path.GetDirectoryName(Info.Location)!, "configured-youtube-boombox-data");
         DownloadsPath = Path.Combine(Paths.BepInExRootPath, "Custom Songs", "Boombox Music");
 
