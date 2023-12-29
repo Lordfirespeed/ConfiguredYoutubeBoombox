@@ -1,0 +1,40 @@
+[config]
+schemaVersion = "0.0.1"
+
+[general]
+repository = "https://thunderstore.io"
+
+[package]
+namespace = "Lordfirespeed"
+name = "Configured_Youtube_Boombox"
+description = "Lethal Company plugin for creating boombox song packs from YouTube content"
+websiteUrl = "https://github.com/Lordfirespeed/ConfiguredYoutubeBoombox/"
+containsNsfwContent = false
+[package.dependencies]
+BepInEx-BepInExPack = "5.4.2100"
+2018-LC_API = "3.2.2"
+
+[build]
+icon = "./icon.png"
+readme = "../README.md"
+outdir = "./dist"
+
+[[build.copy]]
+source = "../ConfiguredYoutubeBoombox/bin/com.github.lordfirespeed.configured_youtube_boombox.dll"
+target = "BepInEx/plugins/"
+
+[[build.copy]]
+source = "../YoutubeDLSharp/bin/Debug/netstandard2.0/ConfiguredYoutubeBoombox.YoutubeDLSharp.dll"
+target = "BepInEx/plugins/"
+
+[[build.copy]]
+source = "../Changelog.md"
+target = "/"
+
+[publish]
+communities = [ "lethal-company", ]
+
+[publish.categories]
+riskofrain2 = [ "bepinex", "mods", ]
+
+

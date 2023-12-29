@@ -27,8 +27,7 @@
 !.github/
 
 ## Thunderstore assets/metadata
-!thunderstore.toml
-!icon.png
+!assets/
 
 ## Solution
 !ConfiguredYoutubeBoombox.sln
