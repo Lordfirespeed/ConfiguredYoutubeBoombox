@@ -20,7 +20,7 @@ namespace ConfiguredYoutubeBoombox.Providers
                 uriType = UriType.Playlist;
             }
 
-            if (id == null || id == string.Empty) return null;
+            if (string.IsNullOrEmpty(id)) return null;
 
             return new ParsedUri(uri, id, uri.Host + uri.PathAndQuery, uriType);
         }
