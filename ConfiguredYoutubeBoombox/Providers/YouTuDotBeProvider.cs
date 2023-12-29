@@ -26,7 +26,7 @@ namespace ConfiguredYoutubeBoombox.Providers
         }
     }
 
-    public class YouTuBeProvider : Provider
+    public class YouTuDotBeProvider : Provider
     {
         public override string[] Hosts => new[] { "youtu.be", "www.youtu.be" };
 
