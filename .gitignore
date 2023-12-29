@@ -1,9 +1,39 @@
-bin/*
+# Exclude everything
+/*
 
-obj/*
+# Specific includes
 
-.vs/*
+## Build System/Scripts
+!NuGet.Config
+!Directory.Build.props
+!build.sh
+!build.ps1
+!build.cmd
 
-Properties/*
+## Markdowns
+!*.md
+!LICENSE
 
-YoutubeBoombox/*
+## important Git files
+!.gitmodules
+!.gitignore
+!.gitattributes
+!.git-blame-ignore-revs
+
+## GitHub specific
+!.github/
+
+## Thunderstore assets/metadata
+!thunderstore.toml
+!icon.png
+
+## Solution
+!ConfiguredYoutubeBoombox.sln
+
+### Refuge Company Project
+!ConfiguredYoutubeBoombox/
+ConfiguredYoutubeBoombox/[Bb]in/
+ConfiguredYoutubeBoombox/[Oo]bj/
+
+# Explicit exceptions/ignores
+**.user

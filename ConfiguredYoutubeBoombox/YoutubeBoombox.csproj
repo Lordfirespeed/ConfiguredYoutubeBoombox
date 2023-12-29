@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>YoutubeBoombox</AssemblyName>
+    <Product></Product>
+    <TargetFrameworkVersion>netstandard2.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="4.3.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild">
+      <Version>0.4.1</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="BepInEx.Core">
+      <Version>5.4.21</Version>
+    </PackageReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp" Publicize="true">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.InputSystem, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\Unity.InputSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Netcode.Runtime, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\Unity.Netcode.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="YoutubeDLSharp\Options\autoconvert.py" />
+  </ItemGroup>
+
+  <Target Name="SetPluginVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
+    <Message Importance="high" Text="MinVer version is $(MinVerVersion)" />
+    <PropertyGroup>
+      <BepInExPluginVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</BepInExPluginVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="NetcodeWeave" AfterTargets="PostBuildEvent">
+    <CallTarget Condition="$(OS) == 'Windows_NT'" Targets="NetcodeWeaveWindows" />
+    <CallTarget Condition="$(OS) != 'Windows_NT'" Targets="NetcodeWeaveUnix" />
+    <Message Importance="high" Text="Successfully weaved NetCode!" />
+  </Target>
+
+  <Target Name="NetcodeWeaveWindows">
+    <Exec Command="cd $(NETCODE_PATCHER_DIR)&#xD;&#xA;NetcodePatcher.dll $(TargetDir) deps/" />
+  </Target>
+
+  <Target Name="NetcodeWeaveUnix">
+    <Exec Command="cd $(NETCODE_PATCHER_DIR)&#xD;&#xA;dotnet NetcodePatcher.dll $(TargetDir) deps/" />
+  </Target>
+
+  <Target Name="PackThunderstore" AfterTargets="NetcodeWeave" Condition="$(PACK_THUNDERSTORE) == 'true'">
+    <Message Importance="high" Text="MinVer version is $(MinVerVersion)" />
+    <PropertyGroup>
+      <PlainVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PlainVersion>
+    </PropertyGroup>
+    <Exec Command="tcli build --config-path $(SolutionDir)assets/thunderstore.toml --package-version $(PlainVersion)" />
+    <ItemGroup>
+      <FilesToRename Include="$(SolutionDir)dist/*-$(PlainVersion).zip" />
+    </ItemGroup>
+    <Move SourceFiles="@(FilesToRename)" DestinationFiles="@(FilesToRename -&gt; Replace($(PlainVersion), $(MinVerVersion)))" />
+  </Target>
+  
+</Project>
