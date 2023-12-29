@@ -59,7 +59,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="YoutubeDLSharp\Options\autoconvert.py" />
+    <Content Include="$(ProjectDir)YoutubeDLSharp/Options/autoconvert.py" />
   </ItemGroup>
 
   <Target Name="SetPluginVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
