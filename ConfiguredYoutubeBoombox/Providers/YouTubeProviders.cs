@@ -4,7 +4,7 @@ namespace ConfiguredYoutubeBoombox.Providers;
 
 public class YouTubeProvider : Provider
 {
-    public override string[] Hosts => new[] { "youtube.com", "www.youtube.com" };
+    public override string[] Hosts => ["youtube.com", "www.youtube.com"];
 
     public override ParsedUri ParseUri(Uri uri)
     {
@@ -28,7 +28,7 @@ public class YouTubeProvider : Provider
 
 public class YouTuDotBeProvider : Provider
 {
-    public override string[] Hosts => new[] { "youtu.be", "www.youtu.be" };
+    public override string[] Hosts => ["youtu.be", "www.youtu.be"];
 
     public override ParsedUri ParseUri(Uri uri)
     {
