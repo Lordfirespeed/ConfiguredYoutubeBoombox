@@ -17,7 +17,7 @@ BepInEx-BepInExPack = "5.4.2100"
 [build]
 icon = "./icon.png"
 readme = "../README.md"
-outdir = "./dist"
+outdir = "../dist"
 
 [[build.copy]]
 source = "../ConfiguredYoutubeBoombox/bin/com.github.lordfirespeed.configured_youtube_boombox.dll"
