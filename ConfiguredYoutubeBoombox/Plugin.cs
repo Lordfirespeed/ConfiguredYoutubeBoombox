@@ -12,7 +12,6 @@ using YoutubeDLSharp;
 namespace ConfiguredYoutubeBoombox;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-[BepInDependency("com.steven.lethalcompany.boomboxmusic", "1.4.0")]
 public class Plugin : BaseUnityPlugin
 {
     #region Config

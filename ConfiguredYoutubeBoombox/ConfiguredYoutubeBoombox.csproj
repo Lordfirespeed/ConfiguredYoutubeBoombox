@@ -51,16 +51,10 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
-    <Reference Include="CustomBoomboxTracks.dll" Publicize="true">
-      <HintPath>$(TEST_PROFILE_DIR)\BepInEx\plugins\Steven-Custom_Boombox_Music\CustomBoomboxTracks.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="$(CI) == 'true'">
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="45.0.2-alpha.1" />
-    <Reference Include="CustomBoomboxTracks.dll" Publicize="true">
-      <HintPath>../lib/CustomBoomboxTracks.dll</HintPath>
-    </Reference>
   </ItemGroup>
   
   <PropertyGroup Condition="$(CI) == 'true'">
