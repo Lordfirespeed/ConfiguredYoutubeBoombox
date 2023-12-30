@@ -24,7 +24,7 @@ source = "../ConfiguredYoutubeBoombox/bin/com.github.lordfirespeed.configured_yo
 target = "BepInEx/plugins/"
 
 [[build.copy]]
-source = "../YoutubeDLSharp/bin/Debug/netstandard2.0/ConfiguredYoutubeBoombox.YoutubeDLSharp.dll"
+source = "../YoutubeDLSharp/bin/Debug/netstandard2.0/YoutubeDLSharp.dll"
 target = "BepInEx/plugins/"
 
 [[build.copy]]
