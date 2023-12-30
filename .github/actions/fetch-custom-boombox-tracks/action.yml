@@ -1,0 +1,14 @@
+name: Fetch Custom Boombox Tracks
+description: Fetches Steven's Custom Boombox Tracks assembly for compilation reference
+inputs:
+  version:
+    description: Custom Boombox Tracks version to fetch
+    required: true
+runs: 
+  using: composite
+  steps:
+    - shell: bash
+      run: sudo apt-get install wget
+  
+    - shell: bash
+      run: wget https://github.com/DeadlyKitten/LC-Boombox/releases/download/v${{ inputs.version }}/CustomBoomboxTracks.dll -O lib/CustomBoomboxTracks.dll
