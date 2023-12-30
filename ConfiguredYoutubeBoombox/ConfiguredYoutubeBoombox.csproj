@@ -76,13 +76,6 @@
   <Target Name="NetcodeWeaveUnix">
     <Exec Command="cd $(NETCODE_PATCHER_DIR)&#xD;&#xA;dotnet NetcodePatcher.dll $(TargetDir) deps/" />
   </Target>
-  
-  <Target Name="RewriteYoutubeDLSharp" DependsOnTargets="NetcodeWeave" AfterTargets="PostBuildEvent">
-    <ItemGroup>
-      <InputAssemblies Include="@(ReferencePathWithRefAssemblies)" Condition="'%(filename)' == 'YoutubeDLSharp'" />
-    </ItemGroup>
-    <Exec Command="dotnet assembly-rewriter -i @(InputAssemblies) -o '@(InputAssemblies->'$(OutputPath)/ConfiguredYoutubeBoombox.%(filename)%(extension)')'" />
-  </Target>
 
   <Target Name="PackThunderstore" DependsOnTargets="NetcodeWeave;RewriteYoutubeDLSharp" Condition="$(PACK_THUNDERSTORE) == 'true'">
     <Message Importance="high" Text="MinVer version is $(MinVerVersion)" /> 
