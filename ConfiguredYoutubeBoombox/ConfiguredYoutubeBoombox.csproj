@@ -45,14 +45,10 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
-    <Reference Include="LC_API.dll">
-      <HintPath>$(TEST_PROFILE_DIR)\BepInEx\plugins\2018-LC_API\LC_API.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="$(CI) == 'true'">
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="45.0.2-alpha.1" />
-    <PackageReference Include="LethalCompany.LC-API" Version="3.2.2" />
   </ItemGroup>
   
   <ItemGroup>
