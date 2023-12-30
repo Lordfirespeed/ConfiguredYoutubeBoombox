@@ -12,6 +12,7 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v4
         with:
+          submodules: true
           ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
           filter: tree:0
