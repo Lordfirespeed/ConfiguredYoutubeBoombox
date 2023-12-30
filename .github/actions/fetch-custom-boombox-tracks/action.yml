@@ -11,4 +11,6 @@ runs:
       run: sudo apt-get install wget
   
     - shell: bash
-      run: wget https://github.com/DeadlyKitten/LC-Boombox/releases/download/v${{ inputs.version }}/CustomBoomboxTracks.dll -O lib/CustomBoomboxTracks.dll
+      run: |
+        mkdir lib
+        wget https://github.com/DeadlyKitten/LC-Boombox/releases/download/v${{ inputs.version }}/CustomBoomboxTracks.dll -O lib/CustomBoomboxTracks.dll
