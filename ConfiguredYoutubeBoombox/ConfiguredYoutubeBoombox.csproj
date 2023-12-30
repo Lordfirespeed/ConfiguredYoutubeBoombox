@@ -61,6 +61,10 @@
       <HintPath>../lib/CustomBoomboxTracks.dll</HintPath>
     </Reference>
   </ItemGroup>
+  
+  <PropertyGroup Condition="$(CI) == 'true'">
+    <PACK_THUNDERSTORE>true</PACK_THUNDERSTORE>
+  </PropertyGroup>
 
   <Target Name="SetPluginVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
     <Message Importance="high" Text="MinVer version is $(MinVerVersion)" />
