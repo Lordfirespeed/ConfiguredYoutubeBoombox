@@ -50,10 +50,16 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="CustomBoomboxTracks.dll">
+      <HintPath>$(TEST_PROFILE_DIR)\BepInEx\plugins\Steven-Custom_Boombox_Music\CustomBoomboxTracks.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="$(CI) == 'true'">
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="45.0.2-alpha.1" />
+    <Reference Include="CustomBoomboxTracks.dll">
+      <HintPath>../lib/CustomBoomboxTracks.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <Target Name="SetPluginVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
@@ -63,21 +69,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="NetcodeWeave" AfterTargets="PostBuildEvent">
-    <CallTarget Condition="$(OS) == 'Windows_NT'" Targets="NetcodeWeaveWindows" />
-    <CallTarget Condition="$(OS) != 'Windows_NT'" Targets="NetcodeWeaveUnix" />
-    <Message Importance="high" Text="Successfully weaved NetCode!" />
-  </Target>
-
-  <Target Name="NetcodeWeaveWindows">
-    <Exec Command="cd $(NETCODE_PATCHER_DIR)&#xD;&#xA;NetcodePatcher.dll $(TargetDir) deps/" />
-  </Target>
-
-  <Target Name="NetcodeWeaveUnix">
-    <Exec Command="cd $(NETCODE_PATCHER_DIR)&#xD;&#xA;dotnet NetcodePatcher.dll $(TargetDir) deps/" />
-  </Target>
-
-  <Target Name="PackThunderstore" DependsOnTargets="NetcodeWeave;RewriteYoutubeDLSharp" Condition="$(PACK_THUNDERSTORE) == 'true'">
+  <Target Name="PackThunderstore" AfterTargets="PostBuildEvent" Condition="$(PACK_THUNDERSTORE) == 'true'">
     <Message Importance="high" Text="MinVer version is $(MinVerVersion)" /> 
     <PropertyGroup>
       <PlainVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PlainVersion>
