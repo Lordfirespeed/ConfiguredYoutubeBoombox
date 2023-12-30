@@ -35,3 +35,20 @@ public class VideoTooLongExceptiona : Exception
     {
     }
 }
+
+public class YoutubeDLProcessFailed : Exception
+{
+    public YoutubeDLProcessFailed()
+    {
+    }
+
+    public YoutubeDLProcessFailed(string message)
+        : base(message)
+    {
+    }
+
+    public YoutubeDLProcessFailed(string message, Exception inner)
+        : base(message, inner)
+    {
+    }
+}

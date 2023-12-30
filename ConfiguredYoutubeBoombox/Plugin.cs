@@ -1,78 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Configuration;
-using ConfiguredYoutubeBoombox.Providers;
-using HarmonyLib;
+using BepInEx.Logging;
 using Newtonsoft.Json;
-using Unity.Netcode;
-using UnityEngine;
-using UnityEngine.InputSystem;
 using YoutubeDLSharp;
 
 namespace ConfiguredYoutubeBoombox;
 
-public class InfoCache : IProgress<string>
-{
-    public static readonly Dictionary<string, float> DurationCache = new();
-    public static readonly Dictionary<string, List<string>> PlaylistCache = new();
-
-    public InfoCache(string id)
-    {
-        Id = id;
-
-        PlaylistCache.Add(id, new List<string>());
-    }
-
-    public string Id { get; set; }
-
-    public void Report(string value)
-    {
-        try
-        {
-            var json = JsonConvert.DeserializeObject<Info>(value);
-
-            if (!DurationCache.ContainsKey(json.id)) DurationCache.Add(json.id, json.duration);
-
-            PlaylistCache[Id].Add(json.id);
-        }
-        catch
-        {
-        }
-    }
-
-    public class Info
-    {
-        public string id { get; set; }
-        public float duration { get; set; }
-    }
-}
-
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-[BepInDependency("LC_API")]
+[BepInDependency("com.steven.lethalcompany.boomboxmusic", "1.4.0")]
 public class Plugin : BaseUnityPlugin
 {
-    private static Harmony Harmony { get; set; }
+    #region Config
+    internal static ConfigEntry<float> MaxSongDuration { get; private set; } = null!;
+    #endregion
 
-    internal static string PluginDataPath { get; private set; }
-
-    internal static string DownloadsPath { get; private set; }
-
-    internal static Plugin Singleton { get; private set; }
-
-    public static YoutubeDL YoutubeDL { get; } = new();
-
-    internal static List<string> PathsThisSession { get; private set; } = new();
-
-    internal static List<Provider> Providers { get; } = new();
+    internal new static ManualLogSource? Logger;
+    internal static string? PluginDataPath;
+    internal static string? DownloadsPath;
+    internal static YoutubeDL YoutubeDL { get; } = new();
+    internal static JsonSerializer TrackListSerializer { get; } = new();
 
     public Plugin()
     {
-        Singleton = this;
+        Logger = base.Logger;
     }
 
     private async void Awake()
@@ -83,89 +38,67 @@ public class Plugin : BaseUnityPlugin
              new ConfigDescription("Maximum song duration in seconds. Any video longer than this will not be downloaded.")
         );
 
+        await InitializeToolsAndDirectories();
+        await DownloadConfiguredTracks();
+    }
+
+    private async Task InitializeToolsAndDirectories()
+    {
         PluginDataPath = Path.Combine(Path.GetDirectoryName(Info.Location)!, "configured-youtube-boombox-data");
         DownloadsPath = Path.Combine(Paths.BepInExRootPath, "Custom Songs", "Boombox Music");
 
         if (!Directory.Exists(PluginDataPath)) Directory.CreateDirectory(PluginDataPath);
         if (!Directory.Exists(DownloadsPath)) Directory.CreateDirectory(DownloadsPath);
 
-        if (!Directory.GetFiles(PluginDataPath).Any(file => file.Contains("yt-dl")))
+        Func<Task> ensureYtDlp = async () =>
+        {
+            if (Directory.GetFiles(PluginDataPath).Any(file => file.Contains("yt-dl"))) return;
             await Utils.DownloadYtDlp(PluginDataPath);
-        if (!Directory.GetFiles(PluginDataPath).Any(file => file.Contains("ffmpeg")))
+        };
+        Func<Task> ensureFfMpeg = async () =>
+        {
+            if (Directory.GetFiles(PluginDataPath).Any(file => file.Contains("ffmpeg"))) return;
             await Utils.DownloadFFmpeg(PluginDataPath);
+        };
+
+        await Task.WhenAll([
+            ensureYtDlp(), 
+            ensureFfMpeg()
+        ]);
 
         YoutubeDL.YoutubeDLPath = Directory.GetFiles(PluginDataPath).First(file => file.Contains("yt-dl"));
         YoutubeDL.FFmpegPath = Directory.GetFiles(PluginDataPath).First(file => file.Contains("ffmpeg"));
-
         YoutubeDL.OutputFolder = DownloadsPath;
-
         YoutubeDL.OutputFileTemplate = "%(id)s.%(ext)s";
-
-        Harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
-
-        Harmony.PatchAll();
-        SetupNetworking();
-
-        var method = new StackTrace().GetFrame(0).GetMethod();
-        var assembly = method.ReflectedType!.Assembly;
-
-        AccessTools.GetTypesFromAssembly(assembly)
-            .Where(t => t.IsSubclassOf(typeof(Provider)))
-            .Select(t => (Activator.CreateInstance(t) as Provider)!)
-            .Do(provider => Providers.Add(provider));
     }
 
-    public static void LogInfo(object data)
+    private IEnumerable<string> DiscoverConfiguredTrackListFiles()
     {
-        Singleton.Logger.LogInfo(data);
+        return Directory.GetDirectories(Paths.PluginPath)
+            .Select(pluginDirectory => Path.Join(pluginDirectory, "configured-youtube-boombox-tracks.json"))
+            .Where(File.Exists);
     }
 
-    public static void LogError(object data)
+    private ConfiguredTrack[] DeserializeConfiguredTrackListFile(string trackListFilePath)
     {
-        Singleton.Logger.LogError(data);
-    }
+        using var streamReader = new StreamReader(trackListFilePath);
+        using var reader = new JsonTextReader(streamReader);
+        var trackListFile = TrackListSerializer.Deserialize<ConfiguredTrackListFile>(reader);
+        if (trackListFile?.Tracks != null) return trackListFile.Tracks;
+        Logger?.LogWarning($"Failed to deserialize any tracks from {trackListFilePath}.");
+        return Array.Empty<ConfiguredTrack>();
+    } 
 
-    public static void LogDebug(object data)
+    private IEnumerable<ConfiguredTrack> DiscoverConfiguredTracks()
     {
-        Singleton.Logger.LogDebug(data);
+        return DiscoverConfiguredTrackListFiles()
+            .SelectMany(DeserializeConfiguredTrackListFile);
     }
 
-    private void SetupNetworking()
+    private async Task DownloadConfiguredTracks()
     {
-        var types = Assembly.GetExecutingAssembly().GetTypes();
-        foreach (var type in types)
-        {
-            var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-            foreach (var method in methods)
-            {
-                var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-                if (attributes.Length > 0) method.Invoke(null, null);
-            }
-        }
+        await Task.WhenAll(
+            DiscoverConfiguredTracks().Select(TrackDownloader.DownloadTrack)
+        );
     }
-
-    [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
-    private class GameNetworkManagerPatch
-    {
-        public static void Postfix(GameNetworkManager __instance)
-        {
-            __instance.GetComponent<NetworkManager>().NetworkConfig.Prefabs.Prefabs
-                .Where(networkPrefab => networkPrefab.Prefab.GetComponent<BoomboxItem>() != null)
-                .Do(networkPrefab => { networkPrefab.Prefab.AddComponent<BoomboxController>(); });
-        }
-    }
-
-    #region Config
-
-    internal static ConfigEntry<int> MaxCachedDownloads { get; private set; }
-
-    internal static ConfigEntry<bool> DeleteDownloadsOnRestart { get; private set; }
-
-    internal static ConfigEntry<float> MaxSongDuration { get; private set; }
-
-    internal static ConfigEntry<bool> EnableDebugLogs { get; private set; }
-
-    internal static ConfigEntry<Key> CustomBoomboxButton { get; private set; }
-
-    #endregion
 }
