@@ -29,7 +29,12 @@
     <PackageReference Include="BepInEx.Core" Version="5.4.21" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
     <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" />
+    <PackageReference Include="LethalCompany.LC-API" Version="3.2.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <ProjectReference Include="../YoutubeDLSharp/YoutubeDLSharp.csproj" >
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.16" />
   </ItemGroup>
   
   <ItemGroup Condition="$(CI) != 'true'">
@@ -45,18 +50,10 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>$(LETHAL_COMPANY_DIR)\Lethal Company_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
-    <Reference Include="LC_API.dll">
-      <HintPath>$(TEST_PROFILE_DIR)\BepInEx\plugins\2018-LC_API\LC_API.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition="$(CI) == 'true'">
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="45.0.2-alpha.1" />
-    <PackageReference Include="u_2018.LethalCompany.LC-API" Version="0.0.0" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Content Include="$(ProjectDir)YoutubeDLSharp/Options/autoconvert.py" />
   </ItemGroup>
 
   <Target Name="SetPluginVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
@@ -79,13 +76,20 @@
   <Target Name="NetcodeWeaveUnix">
     <Exec Command="cd $(NETCODE_PATCHER_DIR)&#xD;&#xA;dotnet NetcodePatcher.dll $(TargetDir) deps/" />
   </Target>
+  
+  <Target Name="RewriteYoutubeDLSharp" DependsOnTargets="NetcodeWeave" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <InputAssemblies Include="@(ReferencePathWithRefAssemblies)" Condition="'%(filename)' == 'YoutubeDLSharp'" />
+    </ItemGroup>
+    <Exec Command="dotnet assembly-rewriter -i @(InputAssemblies) -o '@(InputAssemblies->'$(OutputPath)/ConfiguredYoutubeBoombox.%(filename)%(extension)')'" />
+  </Target>
 
-  <Target Name="PackThunderstore" AfterTargets="NetcodeWeave" Condition="$(PACK_THUNDERSTORE) == 'true'">
-    <Message Importance="high" Text="MinVer version is $(MinVerVersion)" />
+  <Target Name="PackThunderstore" DependsOnTargets="NetcodeWeave;RewriteYoutubeDLSharp" Condition="$(PACK_THUNDERSTORE) == 'true'">
+    <Message Importance="high" Text="MinVer version is $(MinVerVersion)" /> 
     <PropertyGroup>
       <PlainVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PlainVersion>
     </PropertyGroup>
-    <Exec Command="tcli build --config-path $(SolutionDir)assets/thunderstore.toml --package-version $(PlainVersion)" />
+    <Exec Command="dotnet tcli build --config-path $(SolutionDir)assets/thunderstore.toml --package-version $(PlainVersion)" />
     <ItemGroup>
       <FilesToRename Include="$(SolutionDir)dist/*-$(PlainVersion).zip" />
     </ItemGroup>
