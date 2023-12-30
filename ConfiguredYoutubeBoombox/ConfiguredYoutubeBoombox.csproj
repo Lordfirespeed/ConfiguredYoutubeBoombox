@@ -8,6 +8,7 @@
     <Product>Configured Youtube Boombox</Product>
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
