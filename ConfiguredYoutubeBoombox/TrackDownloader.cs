@@ -112,11 +112,19 @@ public class TrackDownloader
         var duration = await GetEffectiveDuration(track);
         if (duration > MaxSongDuration.Value)
             throw new VideoTooLongException("Track too long, skipping.");
-        }
+
+        string?[] filterArgs =
+        [
+            track.VolumeScalar != null ? $"volume:${track.VolumeScalar}" : null,
+        ];
+        filterArgs = filterArgs
+            .Where(x => x is not null)
+            .Cast<string>().ToArray();
         
         string?[] downloaderArgs = [
             track.StartTimestamp != null ? $"-ss {track.StartTimestamp}" : null,
-            track.EndTimestamp != null ? $"-to {track.EndTimestamp}" : null
+            track.EndTimestamp != null ? $"-to {track.EndTimestamp}" : null,
+            filterArgs.Length > 0 ? $"-filter:a \"${String.Join(",", filterArgs)}\"" : null,
         ];
 
         Logger?.LogDebug($"Starting download ({track.TrackName}).");

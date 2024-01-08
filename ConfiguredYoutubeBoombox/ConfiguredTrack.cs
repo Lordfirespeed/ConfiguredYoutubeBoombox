@@ -21,4 +21,7 @@ public class ConfiguredTrack
     
     [JsonProperty("endTimestamp")]
     public string? EndTimestamp { get; set; }
+    
+    [JsonProperty("volumeScalar")]
+    public float? VolumeScalar { get; set; }
 }
