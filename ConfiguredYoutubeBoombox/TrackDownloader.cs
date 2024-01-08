@@ -44,7 +44,7 @@ public class TrackDownloader
             .Select((part, index) => (part, index))
             .ToArray();
 
-        if (parts.Length >= 3)
+        if (parts.Length > 3)
             throw new NotImplementedException("Timestamp has more than 3 parts, support is not implemented");
 
         try
