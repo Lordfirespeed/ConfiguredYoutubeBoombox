@@ -4,15 +4,8 @@
   "description": "A list of tracks for the Configured Youtube Boombox mod to download",
   "$defs": {
     "timestamp": {
-      "oneOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "string",
-          "pattern": "^\\d{1,2}(?::\\d{1,2}){0,2}(?:\\.\\d+)?$"
-        }
-      ]
+      "type": "string",
+      "pattern": "^\\d{1,2}(?::\\d{1,2}){0,2}(?:\\.\\d+)?$"
     }
   },
   "type": "object",
