@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,8 +12,6 @@ namespace ConfiguredYoutubeBoombox;
 
 public class TrackDownloader
 {
-    private static readonly int[] timestampPartMagnitudes = [1, 60, 3600];
-    
     protected static async Task<float> FetchSongDuration(string id)
     {
         Logger?.LogDebug("Fetching video metadata.");
@@ -31,38 +30,14 @@ public class TrackDownloader
     /// </summary>
     /// <param name="timestamp">The timestamp to parse</param>
     /// <returns>The timestamp's time in seconds</returns>
-    protected static float ParseTimestamp(string timestamp)
+    protected static TimeSpan ParseTimestamp(string timestamp)
     {
         if (String.IsNullOrWhiteSpace(timestamp))
             throw new ArgumentException("Timestamp cannot be null or whitespace");
-        
-        if (float.TryParse(timestamp, out var parsedFloat)) return parsedFloat;
 
-        var parts = timestamp.Split(":")
-            .Select(part => part.Trim())
-            .Reverse()
-            .Select((part, index) => (part, index))
-            .ToArray();
+        if (float.TryParse(timestamp, out var parsedFloat)) return TimeSpan.FromSeconds(parsedFloat);
 
-        if (parts.Length > 3)
-            throw new NotImplementedException("Timestamp has more than 3 parts, support is not implemented");
-
-        try
-        {
-            var seconds = float.Parse(parts[0].part);
-            
-            foreach (var (part, index) in parts[1..])
-            {
-                if (part is null) continue;
-                seconds += int.Parse(part) * timestampPartMagnitudes[index];
-            }
-
-            return seconds;
-        }
-        catch (Exception error)
-        {
-            throw new ArgumentException($"Failed to parse the timestamp '{timestamp}'", error);
-        }
+        return TimeSpan.Parse(timestamp, new CultureInfo("en-us"));
     }
 
     protected static async Task<float> GetEffectiveDuration(ConfiguredTrack track)
@@ -75,7 +50,7 @@ public class TrackDownloader
 
         if (track.StartTimestamp is not null)
         {
-            var startTime = ParseTimestamp(track.StartTimestamp);
+            var startTime = (float)ParseTimestamp(track.StartTimestamp).TotalSeconds;
             if (duration <= startTime) return 0;
 
             effectiveDuration -= startTime;
@@ -83,7 +58,7 @@ public class TrackDownloader
 
         if (track.EndTimestamp is not null)
         {
-            var endTime = ParseTimestamp(track.EndTimestamp);
+            var endTime = (float)ParseTimestamp(track.EndTimestamp).TotalSeconds;
             if (duration <= endTime) return effectiveDuration;
 
             effectiveDuration -= duration - endTime;
@@ -101,7 +76,7 @@ public class TrackDownloader
         
         Logger?.LogDebug($"Downloading '{track.TrackName}' ({track.VideoId})");
 
-        var newPath = Path.Combine(DownloadsPath, $"cytbb.{track.TrackName}-{track.VideoId}.mp3");
+        var newPath = Path.Combine(DownloadsPath!, $"cytbb.{track.TrackName}-{track.VideoId}.mp3");
 
         if (File.Exists(newPath))
         {
