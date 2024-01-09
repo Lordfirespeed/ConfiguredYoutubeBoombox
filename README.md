@@ -1,5 +1,9 @@
 # Lordfirespeed-Configured_Youtube_Boombox
 
+[![GitHub Build Status](https://img.shields.io/github/actions/workflow/status/lordfirespeed/configuredyoutubeboombox/build.yml?style=for-the-badge&logo=github)](https://github.com/Lordfirespeed/ConfiguredYoutubeBoombox/actions/workflows/build.yml)
+[![Thunderstore Version](https://img.shields.io/thunderstore/v/Lordfirespeed/Configured_Youtube_Boombox?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/Lordfirespeed/Configured_Youtube_Boombox/)
+[![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/Lordfirespeed/Configured_Youtube_Boombox?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/Lordfirespeed/Configured_Youtube_Boombox/)
+
 ## Usage
 
 ## Features
