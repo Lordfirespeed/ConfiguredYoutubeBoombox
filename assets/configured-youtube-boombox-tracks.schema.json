@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configured Youtube Boombox Tracks",
+  "description": "A list of tracks for the Configured Youtube Boombox mod to download",
+  "$defs": {
+    "timestamp": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\d{1,2}(?::\\d{1,2}){0,2}(?:\\.\\d+)?$"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "tracks": {
+      "title": "Track list",
+      "type": "array",
+      "items": {
+        "title": "Track",
+        "type": "object",
+        "properties": {
+          "youtubeVideoId": {
+            "title": "Youtube Video Id",
+            "type": "string"
+          },
+          "trackName": {
+            "title": "Track Name",
+            "type": "string"
+          },
+          "startTimestamp": {
+            "title": "Start Timestamp",
+            "$ref": "#/$defs/timestamp"
+          },
+          "endTimestamp": {
+            "title": "End Timestamp",
+            "$ref": "#/$defs/timestamp"
+          },
+          "volumeScalar": {
+            "title": "Volume Scalar",
+            "type": "number"
+          }
+        },
+        "required": ["youtubeVideoId", "trackName"]
+      },
+      "minItems": 1
+    }
+  },
+  "required": ["tracks"]
+}
