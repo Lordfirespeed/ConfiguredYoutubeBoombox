@@ -112,19 +112,23 @@ public class TrackDownloader
         var duration = await GetEffectiveDuration(track);
         if (duration > MaxSongDuration.Value)
             throw new VideoTooLongException("Track too long, skipping.");
-
-        string?[] filterArgs =
-        [
-            track.VolumeScalar != null ? $"volume:${track.VolumeScalar}" : null,
+        
+        string?[] downloaderArgs = [
+            "ffmpeg:-nostats",
+            "ffmpeg:-loglevel 0",
+            track.StartTimestamp != null ? $"ffmpeg:-ss {track.StartTimestamp}" : null,
+            track.EndTimestamp != null ? $"ffmpeg:-to {track.EndTimestamp}" : null,
         ];
-        filterArgs = filterArgs
+
+        string?[] extractAudioFilterArgs = [
+            track.VolumeScalar != null ? $"volume={track.VolumeScalar}" : null,
+        ];
+        extractAudioFilterArgs = extractAudioFilterArgs
             .Where(x => x is not null)
             .Cast<string>().ToArray();
         
-        string?[] downloaderArgs = [
-            track.StartTimestamp != null ? $"-ss {track.StartTimestamp}" : null,
-            track.EndTimestamp != null ? $"-to {track.EndTimestamp}" : null,
-            filterArgs.Length > 0 ? $"-filter:a \"${String.Join(",", filterArgs)}\"" : null,
+        string?[] postProcessorArgs = [
+          extractAudioFilterArgs.Length > 0 ? $"ExtractAudio:-filter:a {String.Join(":", extractAudioFilterArgs)}" : null,
         ];
 
         Logger?.LogDebug($"Starting download ({track.TrackName}).");
@@ -133,8 +137,8 @@ public class TrackDownloader
             AudioConversionFormat.Mp3,
             overrideOptions: new()
             {
-                Downloader = "ffmpeg",
-                DownloaderArgs = String.Join(' ', downloaderArgs.Where(x => x != null))
+                DownloaderArgs = downloaderArgs.Where(x => x != null).Cast<string>().ToArray(),
+                PostprocessorArgs = postProcessorArgs.Where(x => x != null).Cast<string>().ToArray(),
             });
         Logger?.LogDebug($"Download complete ({track.TrackName}).");
 
