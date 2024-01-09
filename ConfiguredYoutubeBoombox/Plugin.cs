@@ -49,12 +49,12 @@ public class Plugin : BaseUnityPlugin
         if (!Directory.Exists(PluginDataPath)) Directory.CreateDirectory(PluginDataPath);
         if (!Directory.Exists(DownloadsPath)) Directory.CreateDirectory(DownloadsPath);
 
-        Func<Task> ensureYtDlp = async () =>
+        var ensureYtDlp = async () =>
         {
             if (Directory.GetFiles(PluginDataPath).Any(file => file.Contains("yt-dl"))) return;
             await Utils.DownloadYtDlp(PluginDataPath);
         };
-        Func<Task> ensureFfMpeg = async () =>
+        var ensureFfMpeg = async () =>
         {
             if (Directory.GetFiles(PluginDataPath).Any(file => file.Contains("ffmpeg"))) return;
             await Utils.DownloadFFmpeg(PluginDataPath);
