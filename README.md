@@ -4,6 +4,9 @@
 [![Thunderstore Version](https://img.shields.io/thunderstore/v/Lordfirespeed/Configured_Youtube_Boombox?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/Lordfirespeed/Configured_Youtube_Boombox/)
 [![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/Lordfirespeed/Configured_Youtube_Boombox?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/Lordfirespeed/Configured_Youtube_Boombox/)
 
+A Lethal Company mod that downloads audio from YouTube for use with 
+[Steven's Custom Boombox Music](https://thunderstore.io/c/lethal-company/p/Steven/Custom_Boombox_Music/).
+
 ## Usage
 
 ## Features
