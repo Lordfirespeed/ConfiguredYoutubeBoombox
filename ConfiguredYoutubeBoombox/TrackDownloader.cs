@@ -111,7 +111,8 @@ public class TrackDownloader
             track.VideoId,
             AudioConversionFormat.Mp3,
             overrideOptions: new()
-            {
+            {   
+                Downloader = new[] { "ffmpeg", },
                 DownloaderArgs = downloaderArgs.Where(x => x != null).Cast<string>().ToArray(),
                 PostprocessorArgs = postProcessorArgs.Where(x => x != null).Cast<string>().ToArray(),
             });
