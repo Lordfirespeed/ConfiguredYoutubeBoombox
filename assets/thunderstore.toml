@@ -24,7 +24,7 @@ source = "../ConfiguredYoutubeBoombox/bin/com.github.lordfirespeed.configured_yo
 target = "BepInEx/plugins/"
 
 [[build.copy]]
-source = "../Changelog.md"
+source = "../CHANGELOG.md"
 target = "/"
 
 [publish]
