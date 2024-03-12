@@ -50,7 +50,7 @@ Seconds can be a decimal quantity and leading zeroes can be omitted. For example
 - ❌ `1:62:30` (can't have >=60 minutes when specifying hours)
 
 ### `endTimestamp`
-Optional `string` of same form as `startTimestamp`. The downloaded audio will be cropped to start at this timestamp.
+Optional `string` of same form as `startTimestamp`. The downloaded audio will be cropped to end at this timestamp.
 
 ## FAQ / Common Issues
 
